@@ -49,11 +49,44 @@ st.markdown("""
     border-radius: 12px;
     font-weight: 700;
 }
+.hero-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+}
+.hero-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 8px;
+}
+.hero-desc {
+    color: #4b5563;
+    font-size: 16px;
+    line-height: 1.7;
+}
 </style>
 """, unsafe_allow_html=True)
 
 st.title("AI 기반 지반개량 현황 분석 및 공정 예측 시스템")
 st.caption("지반개량공사 현황표와 CCM 천공일지를 업로드하면 진행률, 잔여 물량, 예상 완료일, 장비 간 시공 편차를 자동 분석합니다.")
+
+st.markdown("""
+<div class="hero-card">
+    <div class="hero-title">지반개량 공정 데이터를 업로드하세요</div>
+    <div class="hero-desc">
+        지반개량공사 현황표와 CCM 천공일지를 업로드하면 공정 진행률, 잔여 물량, 예상 완료일,
+        장비별 시공심도, 인접 천공 장비 간 편차를 대시보드 형태로 자동 분석합니다.
+    </div>
+    <ul style="color:#374151; line-height:1.9; margin-top:14px;">
+        <li><b>지반개량공사 현황표</b>: 전체 진행률, 공종별 진행률, 잔여 물량, 완료일 예측</li>
+        <li><b>CCM 천공일지</b>: 장비별 시공심도, 이상치, 인접 천공 장비 간 심도차 분석</li>
+        <li><b>AI 종합 의견</b>: 현재 공정 상태와 관리 필요 구간 자동 요약</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
 
 
 def to_num(x):
@@ -332,45 +365,55 @@ def create_ai_comment(summary, daily, drill_df, adjacent_df):
 
 
 uploaded_files = st.file_uploader(
-    "분석할 엑셀 파일을 업로드하세요. 지반개량공사현황 파일과 CCM천공일지 파일을 함께 올릴 수 있습니다.",
+    "엑셀 파일 업로드",
     type=["xlsx"],
-    accept_multiple_files=True
+    accept_multiple_files=True,
+    help="지반개량공사 현황표와 CCM 천공일지를 함께 업로드할 수 있습니다."
 )
 
 if not uploaded_files:
-    st.info("엑셀 파일을 업로드하면 대시보드가 자동 생성됩니다.")
+    st.info("먼저 엑셀 파일을 업로드하세요.")
     st.stop()
 
-all_summary = []
-all_daily = []
-all_drill = []
+generate = st.button("분석 결과 생성하기", type="primary", use_container_width=True)
 
-for file in uploaded_files:
-    name = file.name
+if not generate:
+    st.warning("파일 업로드가 완료되었습니다. 위 버튼을 눌러 분석을 시작하세요.")
+    st.stop()
 
-    try:
-        summary, daily = parse_status_file(file)
-        if not summary.empty:
-            summary["파일명"] = name
-            all_summary.append(summary)
-        if not daily.empty:
-            daily["파일명"] = name
-            all_daily.append(daily)
-    except:
-        pass
+with st.spinner("데이터를 분석하고 대시보드를 생성하는 중입니다..."):
+    all_summary = []
+    all_daily = []
+    all_drill = []
 
-    try:
-        drill = parse_drilling_file(file)
-        if not drill.empty:
-            drill["파일명"] = name
-            all_drill.append(drill)
-    except:
-        pass
+    for file in uploaded_files:
+        name = file.name
 
-summary_df = pd.concat(all_summary, ignore_index=True) if all_summary else pd.DataFrame()
-daily_df = pd.concat(all_daily, ignore_index=True) if all_daily else pd.DataFrame()
-drill_df = pd.concat(all_drill, ignore_index=True) if all_drill else pd.DataFrame()
-adjacent_df = make_adjacent_comparison(drill_df)
+        try:
+            summary, daily = parse_status_file(file)
+            if not summary.empty:
+                summary["파일명"] = name
+                all_summary.append(summary)
+            if not daily.empty:
+                daily["파일명"] = name
+                all_daily.append(daily)
+        except:
+            pass
+
+        try:
+            drill = parse_drilling_file(file)
+            if not drill.empty:
+                drill["파일명"] = name
+                all_drill.append(drill)
+        except:
+            pass
+
+    summary_df = pd.concat(all_summary, ignore_index=True) if all_summary else pd.DataFrame()
+    daily_df = pd.concat(all_daily, ignore_index=True) if all_daily else pd.DataFrame()
+    drill_df = pd.concat(all_drill, ignore_index=True) if all_drill else pd.DataFrame()
+    adjacent_df = make_adjacent_comparison(drill_df)
+
+st.success("분석 결과가 생성되었습니다.")
 
 st.divider()
 
