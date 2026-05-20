@@ -493,7 +493,7 @@ def create_ai_comment(summary, daily, drill_df, adjacent_df):
 
 
 uploaded_files = st.file_uploader(
-    "엑셀 파일 업로드",
+    "엑셀 파일을 여기에 드래그앤드롭하거나 클릭해서 업로드하세요",
     type=["xlsx"],
     accept_multiple_files=True,
     help="지반개량공사 현황표와 CCM 천공일지를 함께 업로드할 수 있습니다."
