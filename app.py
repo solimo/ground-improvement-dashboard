@@ -36,11 +36,10 @@ html { scroll-behavior: smooth; }
 }
 
 .logo-box {
-    background: white;
-    padding: 14px;
-    border-radius: 16px;
+    padding-top: 10px;
+    padding-bottom: 10px;
     margin-bottom: 18px;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+    text-align: center;
 }
 
 .main-title {
