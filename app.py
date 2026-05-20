@@ -368,7 +368,7 @@ st.subheader("2. 일자별 생산성 및 완료일 예측")
 
 if not daily_df.empty:
     daily_df = daily_df.sort_values("날짜")
-    daily_df["합계"] = daily_df[["CCM-T", "CCM", "표층"]].sum(axis=1)
+    daily_df["중층합계"] = daily_df["CCM-T"] + daily_df["CCM"]
 
     recent_avg = daily_df.tail(7)["합계"].mean()
     last_date = daily_df["날짜"].max()
