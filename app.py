@@ -4,12 +4,15 @@ import numpy as np
 import plotly.express as px
 import re
 from datetime import timedelta
+from pathlib import Path
 
 st.set_page_config(
     page_title="지반개량 현황 분석 및 공정 예측 시스템",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+LOGO_PATH = "cj_logo.png"
 
 st.markdown("""
 <style>
@@ -30,6 +33,14 @@ html { scroll-behavior: smooth; }
 
 [data-testid="stSidebar"] * {
     color: #f8fafc !important;
+}
+
+.logo-box {
+    background: white;
+    padding: 14px;
+    border-radius: 16px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
 }
 
 .main-title {
@@ -221,6 +232,26 @@ html { scroll-behavior: smooth; }
     font-size: 14px;
     line-height: 1.6;
     margin-bottom: 16px;
+}
+
+[data-testid="stPlotlyChart"] {
+    background: white;
+    border-radius: 22px;
+    padding: 16px;
+    border: 1px solid #dbe3ef;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.js-plotly-plot .plotly,
+.js-plotly-plot .plot-container,
+.js-plotly-plot svg {
+    border-radius: 18px !important;
+}
+
+.plotly .modebar {
+    border-radius: 12px !important;
 }
 
 .stDownloadButton button, .stButton button {
@@ -476,7 +507,6 @@ def make_adjacent_comparison(drill_df):
                 for _, b in rights.iterrows():
                     if a["장비"] == b["장비"]:
                         continue
-
                     if a["장비유형"] != b["장비유형"]:
                         continue
 
@@ -543,6 +573,13 @@ def create_ai_comment(summary, daily, drill_df, adjacent_df):
 
 
 with st.sidebar:
+    if Path(LOGO_PATH).exists():
+        st.markdown('<div class="logo-box">', unsafe_allow_html=True)
+        st.image(LOGO_PATH, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    else:
+        st.caption("로고 파일 없음: cj_logo.png")
+
     st.markdown("## 공정 분석 시스템")
     st.markdown("---")
     st.markdown("### 분석 항목")
@@ -641,11 +678,7 @@ has_drilling = not drill_df.empty
 st.success("분석 결과가 생성되었습니다.")
 
 if has_status:
-    section_header(
-        "공정 현황 요약",
-        "지반개량공사 현황표 기준으로 전체 진행률, 잔여 물량, 최근 생산성, 예상 완료일을 요약합니다.",
-        "status-summary"
-    )
+    section_header("공정 현황 요약", "지반개량공사 현황표 기준으로 전체 진행률, 잔여 물량, 최근 생산성, 예상 완료일을 요약합니다.", "status-summary")
 
     with st.container(border=True):
         total_design = summary_df["설계수량"].sum() if not summary_df.empty else 0
