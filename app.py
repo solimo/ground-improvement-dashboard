@@ -7,84 +7,196 @@ from datetime import timedelta
 
 st.set_page_config(
     page_title="지반개량 현황 분석 및 공정 예측 시스템",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 st.markdown("""
 <style>
+.stApp {
+    background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+}
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+}
+[data-testid="stSidebar"] {
+    background: #0f172a;
+}
+[data-testid="stSidebar"] * {
+    color: #f8fafc !important;
+}
+.main-title {
+    font-size: 34px;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+.sub-title {
+    color: #64748b;
+    font-size: 16px;
+    margin-bottom: 22px;
+}
+.hero-card {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 45%, #38bdf8 100%);
+    padding: 32px;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+}
+.hero-title {
+    font-size: 30px;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 10px;
+}
+.hero-desc {
+    color: #e0f2fe;
+    font-size: 16px;
+    line-height: 1.75;
+}
+.hero-list {
+    color: white;
+    line-height: 1.9;
+    margin-top: 16px;
+}
+.hero-list li {
+    margin-bottom: 4px;
+}
 .metric-card {
-    background-color: #f8f9fb;
-    padding: 18px;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
     text-align: center;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
 }
 .metric-title {
     font-size: 14px;
-    color: #6b7280;
-}
-.metric-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: #111827;
-}
-.status-good {
-    background-color: #ecfdf5;
-    color: #065f46;
-    padding: 14px;
-    border-radius: 12px;
-    font-weight: 700;
-}
-.status-watch {
-    background-color: #fffbeb;
-    color: #92400e;
-    padding: 14px;
-    border-radius: 12px;
-    font-weight: 700;
-}
-.status-risk {
-    background-color: #fef2f2;
-    color: #991b1b;
-    padding: 14px;
-    border-radius: 12px;
-    font-weight: 700;
-}
-.hero-card {
-    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
-    padding: 30px;
-    border-radius: 20px;
-    border: 1px solid #e5e7eb;
-    margin-bottom: 24px;
-}
-.hero-title {
-    font-size: 28px;
-    font-weight: 800;
-    color: #111827;
+    color: #64748b;
     margin-bottom: 8px;
 }
-.hero-desc {
-    color: #4b5563;
-    font-size: 16px;
+.metric-value {
+    font-size: 30px;
+    font-weight: 900;
+    color: #0f172a;
+}
+.section-card {
+    background: white;
+    padding: 22px;
+    border-radius: 22px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    margin-bottom: 20px;
+}
+.status-good {
+    background: linear-gradient(135deg, #dcfce7 0%, #ecfdf5 100%);
+    color: #065f46;
+    padding: 16px 18px;
+    border-radius: 16px;
+    font-weight: 800;
+    border: 1px solid #bbf7d0;
+}
+.status-watch {
+    background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+    color: #92400e;
+    padding: 16px 18px;
+    border-radius: 16px;
+    font-weight: 800;
+    border: 1px solid #fde68a;
+}
+.status-risk {
+    background: linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);
+    color: #991b1b;
+    padding: 16px 18px;
+    border-radius: 16px;
+    font-weight: 800;
+    border: 1px solid #fecaca;
+}
+.notice-card {
+    background: white;
+    border: 1px solid #dbeafe;
+    border-left: 6px solid #2563eb;
+    padding: 18px 20px;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+    margin-bottom: 18px;
+}
+.notice-title {
+    color: #1e3a8a;
+    font-weight: 900;
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+.notice-desc {
+    color: #475569;
     line-height: 1.7;
+}
+.small-chip {
+    display: inline-block;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 700;
+    font-size: 13px;
+    margin-right: 6px;
+    margin-bottom: 6px;
+}
+hr {
+    margin-top: 1.8rem;
+    margin-bottom: 1.8rem;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("AI 기반 지반개량 현황 분석 및 공정 예측 시스템")
-st.caption("지반개량공사 현황표와 CCM 천공일지를 업로드하면 진행률, 잔여 물량, 예상 완료일, 장비 간 시공 편차를 자동 분석합니다.")
+with st.sidebar:
+    st.markdown("## 공정 분석 시스템")
+    st.markdown("---")
+    st.markdown("### 분석 항목")
+    st.markdown("- 공정 진행률")
+    st.markdown("- 잔여 물량")
+    st.markdown("- 완료일 예측")
+    st.markdown("- 장비별 천공 분석")
+    st.markdown("- 동일 유형 장비 편차")
+    st.markdown("---")
+    st.markdown("### 비교 기준")
+    st.markdown("삼축 ↔ 삼축")
+    st.markdown("일축 ↔ 일축")
+    st.markdown("삼축 ↔ 일축 제외")
+
+st.markdown('<div class="main-title">AI 기반 지반개량 현황 분석 및 공정 예측 시스템</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">지반개량공사 현황표와 CCM 천공일지를 기반으로 공정 현황, 생산성, 완료일, 장비 간 편차를 자동 분석합니다.</div>', unsafe_allow_html=True)
 
 st.markdown("""
 <div class="hero-card">
     <div class="hero-title">지반개량 공정 데이터를 업로드하세요</div>
     <div class="hero-desc">
-        지반개량공사 현황표와 CCM 천공일지를 업로드하면 공정 진행률, 잔여 물량, 예상 완료일,
-        장비별 시공심도, 인접 천공 장비 간 편차를 대시보드 형태로 자동 분석합니다.
+        현황표와 천공일지를 함께 업로드하면 공정 진행률, 잔여 물량, 예상 완료일,
+        장비별 시공심도, 동일 장비유형 내 인접 천공 편차를 한 번에 분석합니다.
     </div>
-    <ul style="color:#374151; line-height:1.9; margin-top:14px;">
-        <li><b>지반개량공사 현황표</b>: 전체 진행률, 공종별 진행률, 잔여 물량, 완료일 예측</li>
-        <li><b>CCM 천공일지</b>: 장비별 시공심도, 이상치, 인접 천공 장비 간 심도차 분석</li>
-        <li><b>비교 기준</b>: 삼축은 삼축끼리, 일축은 일축끼리만 비교하며 삼축↔일축 비교는 제외</li>
+    <ul class="hero-list">
+        <li><b>현황표 분석</b>: 전체 진행률, 공종별 진행률, 잔여 물량, 완료일 예측</li>
+        <li><b>천공일지 분석</b>: 장비별 시공심도, 이상치, 인접 천공 심도차 분석</li>
+        <li><b>비교 기준</b>: 삼축은 삼축끼리, 일축은 일축끼리만 비교</li>
     </ul>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="notice-card">
+    <div class="notice-title">사용 방법</div>
+    <div class="notice-desc">
+        ① 지반개량공사 현황표와 CCM 천공일지를 업로드합니다. 
+        ② <b>분석 결과 생성하기</b> 버튼을 누릅니다. 
+        ③ 공정 현황과 관리 필요 구간을 대시보드에서 확인합니다.
+    </div>
+    <div style="margin-top:12px;">
+        <span class="small-chip">Excel 업로드</span>
+        <span class="small-chip">자동 분석</span>
+        <span class="small-chip">대시보드 출력</span>
+        <span class="small-chip">CSV 다운로드</span>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -433,7 +545,7 @@ st.success("분석 결과가 생성되었습니다.")
 
 st.divider()
 
-st.subheader("📌 핵심 현황 요약")
+st.subheader("핵심 현황 요약")
 
 max_depth_diff = adjacent_df["심도차"].max() if not adjacent_df.empty else 0
 
@@ -525,6 +637,7 @@ st.divider()
 left, right = st.columns([1.1, 1])
 
 with left:
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
     st.subheader("1. 공종별 진행률")
 
     if not summary_df.empty:
@@ -551,8 +664,10 @@ with left:
             )
     else:
         st.warning("지반개량공사 현황표 데이터를 찾지 못했습니다.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with right:
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
     st.subheader("2. 완료일 예측")
 
     if not daily_df.empty:
@@ -565,9 +680,11 @@ with right:
         st.caption("※ 중층은 공 단위, 표층은 ㎡ 단위로 산정되어 생산성 및 완료일 예측은 분리 해석합니다.")
     else:
         st.warning("일자별 실적 데이터를 찾지 못했습니다.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
 
+st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.subheader("3. 일자별 작업 실적 추이")
 
 if not daily_df.empty:
@@ -615,8 +732,11 @@ if not daily_df.empty:
 else:
     st.warning("일자별 실적 데이터를 찾지 못했습니다.")
 
+st.markdown('</div>', unsafe_allow_html=True)
+
 st.divider()
 
+st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.subheader("4. CCM 천공일지 장비별 분석")
 
 if not drill_df.empty:
@@ -675,10 +795,12 @@ if not drill_df.empty:
 else:
     st.warning("CCM 천공일지 데이터를 찾지 못했습니다.")
 
+st.markdown('</div>', unsafe_allow_html=True)
+
 st.divider()
 
+st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.subheader("5. 동일 장비유형 인접 천공 TOP 10")
-
 st.caption("※ 비교 기준: 삼축은 삼축끼리, 일축은 일축끼리만 비교합니다. 삼축↔일축 비교는 제외합니다.")
 
 if not adjacent_df.empty:
@@ -746,13 +868,18 @@ if not adjacent_df.empty:
 else:
     st.info("동일 장비유형 내 서로 다른 장비가 인접 천공번호를 시공한 비교 사례를 찾지 못했습니다.")
 
+st.markdown('</div>', unsafe_allow_html=True)
+
 st.divider()
 
+st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.subheader("6. AI 종합 분석 의견")
 st.write(create_ai_comment(summary_df, daily_df, drill_df, adjacent_df))
+st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
 
+st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.subheader("7. 데이터 다운로드")
 
 if not summary_df.empty:
@@ -770,3 +897,5 @@ if not adjacent_df.empty:
         file_name="동일유형_인접천공_장비비교.csv",
         mime="text/csv"
     )
+
+st.markdown('</div>', unsafe_allow_html=True)
