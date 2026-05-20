@@ -83,7 +83,7 @@ st.markdown("""
     <ul style="color:#374151; line-height:1.9; margin-top:14px;">
         <li><b>지반개량공사 현황표</b>: 전체 진행률, 공종별 진행률, 잔여 물량, 완료일 예측</li>
         <li><b>CCM 천공일지</b>: 장비별 시공심도, 이상치, 인접 천공 장비 간 심도차 분석</li>
-        <li><b>AI 종합 의견</b>: 현재 공정 상태와 관리 필요 구간 자동 요약</li>
+        <li><b>비교 기준</b>: 삼축은 삼축끼리, 일축은 일축끼리만 비교하며 삼축↔일축 비교는 제외</li>
     </ul>
 </div>
 """, unsafe_allow_html=True)
@@ -98,6 +98,15 @@ def clean_machine_name(sheet_name):
     name = name.replace("천공일지", "").replace("작업일지", "")
     name = name.replace("(", " (").replace(")", ")")
     return name
+
+
+def classify_machine_type(machine_name):
+    name = str(machine_name)
+    if "삼축" in name:
+        return "삼축"
+    if "일축" in name:
+        return "일축"
+    return "기타"
 
 
 def parse_status_file(uploaded_file):
@@ -210,6 +219,7 @@ def parse_drilling_file(uploaded_file):
     for sheet in xls.sheet_names:
         df = pd.read_excel(xls, sheet_name=sheet, header=None)
         machine = clean_machine_name(sheet)
+        machine_type = classify_machine_type(machine)
         current_zone_from_header = None
 
         for r in range(len(df)):
@@ -252,6 +262,7 @@ def parse_drilling_file(uploaded_file):
             status = "이상치" if actual <= 0 or actual > 30 else "정상"
 
             records.append({
+                "장비유형": machine_type,
                 "장비": machine,
                 "시트": sheet,
                 "구역": zone,
@@ -270,10 +281,10 @@ def make_adjacent_comparison(drill_df):
     if drill_df.empty:
         return pd.DataFrame()
 
-    valid = drill_df[drill_df["상태"] == "정상"].copy()
+    valid = drill_df[(drill_df["상태"] == "정상") & (drill_df["장비유형"].isin(["삼축", "일축"]))].copy()
 
     agg = (
-        valid.groupby(["구역", "대구역", "천공번호", "장비"], as_index=False)
+        valid.groupby(["장비유형", "구역", "대구역", "천공번호", "장비"], as_index=False)
         .agg(
             설계심도=("설계심도", "mean"),
             시공심도=("시공심도", "mean"),
@@ -283,7 +294,7 @@ def make_adjacent_comparison(drill_df):
 
     cases = []
 
-    for zone, g in agg.groupby("구역"):
+    for (machine_type, zone), g in agg.groupby(["장비유형", "구역"]):
         g = g.sort_values("천공번호")
         holes = sorted(g["천공번호"].unique())
 
@@ -297,9 +308,14 @@ def make_adjacent_comparison(drill_df):
                     if a["장비"] == b["장비"]:
                         continue
 
+                    if a["장비유형"] != b["장비유형"]:
+                        continue
+
                     diff = abs(a["시공심도"] - b["시공심도"])
 
                     cases.append({
+                        "비교유형": f"{machine_type}끼리 비교",
+                        "장비유형": machine_type,
                         "대구역": a["대구역"],
                         "구역": zone,
                         "천공번호1": h1,
@@ -355,7 +371,7 @@ def create_ai_comment(summary, daily, drill_df, adjacent_df):
     if not adjacent_df.empty:
         top = adjacent_df.iloc[0]
         comments.append(
-            f"천공일지 기준 서로 다른 장비가 인접 천공을 수행한 사례 중 최대 심도차는 {top['구역']} {top['천공번호1']}~{top['천공번호2']}번에서 {top['심도차']}m로 확인되었습니다. 해당 구간은 장비별 시공 조건 차이 또는 지반 조건 차이를 검토할 필요가 있습니다."
+            f"천공일지 기준 동일 장비유형 내에서 서로 다른 장비가 인접 천공을 수행한 사례 중 최대 심도차는 {top['구역']} {top['천공번호1']}~{top['천공번호2']}번에서 {top['심도차']}m로 확인되었습니다. 본 분석은 삼축은 삼축끼리, 일축은 일축끼리만 비교하고 삼축↔일축 비교는 제외했습니다."
         )
 
     if not comments:
@@ -481,7 +497,7 @@ with col3:
 with col4:
     st.markdown(f"""
     <div class="metric-card">
-        <div class="metric-title">최대 심도차</div>
+        <div class="metric-title">동일유형 최대 심도차</div>
         <div class="metric-value">{max_depth_diff:.2f}m</div>
     </div>
     """, unsafe_allow_html=True)
@@ -490,17 +506,17 @@ st.markdown("")
 
 if max_depth_diff >= 3:
     st.markdown(
-        f'<div class="status-risk">주의: 인접 천공 장비 간 최대 심도차가 {max_depth_diff:.2f}m로 확인되었습니다. 해당 구간 검토가 필요합니다.</div>',
+        f'<div class="status-risk">주의: 동일 장비유형 내 인접 천공 장비 간 최대 심도차가 {max_depth_diff:.2f}m로 확인되었습니다. 해당 구간 검토가 필요합니다.</div>',
         unsafe_allow_html=True
     )
 elif max_depth_diff >= 2:
     st.markdown(
-        f'<div class="status-watch">관찰: 인접 천공 장비 간 심도차가 일부 확인됩니다. 주요 구간 모니터링이 필요합니다.</div>',
+        f'<div class="status-watch">관찰: 동일 장비유형 내 인접 천공 장비 간 심도차가 일부 확인됩니다. 주요 구간 모니터링이 필요합니다.</div>',
         unsafe_allow_html=True
     )
 else:
     st.markdown(
-        '<div class="status-good">양호: 전체 공정 및 장비 간 편차가 관리 가능한 수준입니다.</div>',
+        '<div class="status-good">양호: 동일 장비유형 내 장비 간 편차가 관리 가능한 수준입니다.</div>',
         unsafe_allow_html=True
     )
 
@@ -613,14 +629,14 @@ if not drill_df.empty:
     c4.metric("평균 시공심도", f"{normal_df['시공심도'].mean():.2f}m")
 
     machine_summary = (
-        normal_df.groupby("장비", as_index=False)
+        normal_df.groupby(["장비유형", "장비"], as_index=False)
         .agg(
             천공수=("천공번호", "count"),
             평균설계심도=("설계심도", "mean"),
             평균시공심도=("시공심도", "mean"),
             평균편차=("계획대비편차", "mean")
         )
-        .sort_values("천공수", ascending=False)
+        .sort_values(["장비유형", "천공수"], ascending=[True, False])
     )
 
     left, right = st.columns(2)
@@ -630,6 +646,7 @@ if not drill_df.empty:
             machine_summary,
             x="장비",
             y="평균시공심도",
+            color="장비유형",
             text=machine_summary["평균시공심도"].round(2),
             title="장비별 평균 시공심도"
         )
@@ -638,7 +655,7 @@ if not drill_df.empty:
 
     with right:
         zone_count = (
-            normal_df.groupby("대구역", as_index=False)
+            normal_df.groupby(["장비유형", "대구역"], as_index=False)
             .agg(천공수=("천공번호", "count"), 평균시공심도=("시공심도", "mean"))
         )
 
@@ -646,6 +663,7 @@ if not drill_df.empty:
             zone_count,
             x="대구역",
             y="천공수",
+            color="장비유형",
             text="천공수",
             title="구역별 천공 데이터 수"
         )
@@ -659,7 +677,9 @@ else:
 
 st.divider()
 
-st.subheader("5. 관리 필요 인접 천공 TOP 10")
+st.subheader("5. 동일 장비유형 인접 천공 TOP 10")
+
+st.caption("※ 비교 기준: 삼축은 삼축끼리, 일축은 일축끼리만 비교합니다. 삼축↔일축 비교는 제외합니다.")
 
 if not adjacent_df.empty:
     top_cases = adjacent_df.head(10).copy()
@@ -671,12 +691,12 @@ if not adjacent_df.empty:
     )
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("서로 다른 장비 인접 비교", f"{len(adjacent_df):,}건")
+    c1.metric("동일유형 인접 비교", f"{len(adjacent_df):,}건")
     c2.metric("평균 심도차", f"{adjacent_df['심도차'].mean():.2f}m")
     c3.metric("최대 심도차", f"{adjacent_df['심도차'].max():.2f}m")
 
     st.dataframe(
-        top_cases[["비교구간", "장비비교", "시공심도1", "시공심도2", "심도차", "검토등급"]],
+        top_cases[["비교유형", "비교구간", "장비비교", "시공심도1", "시공심도2", "심도차", "검토등급"]],
         use_container_width=True,
         hide_index=True
     )
@@ -685,15 +705,15 @@ if not adjacent_df.empty:
         top_cases.sort_values("심도차"),
         x="심도차",
         y="비교구간",
-        color="검토등급",
+        color="장비유형",
         orientation="h",
-        title="인접 천공 장비 간 심도차 TOP 10"
+        title="동일 장비유형 인접 천공 심도차 TOP 10"
     )
     fig5.update_layout(xaxis_title="시공심도 차이(m)", yaxis_title="천공 구간")
     st.plotly_chart(fig5, use_container_width=True)
 
-    area_summary = (
-        adjacent_df.groupby("대구역", as_index=False)
+    type_summary = (
+        adjacent_df.groupby("장비유형", as_index=False)
         .agg(
             비교사례수=("심도차", "count"),
             평균심도차=("심도차", "mean"),
@@ -703,6 +723,20 @@ if not adjacent_df.empty:
         .sort_values("최대심도차", ascending=False)
     )
 
+    area_summary = (
+        adjacent_df.groupby(["장비유형", "대구역"], as_index=False)
+        .agg(
+            비교사례수=("심도차", "count"),
+            평균심도차=("심도차", "mean"),
+            최대심도차=("심도차", "max"),
+            주의사례수=("검토등급", lambda s: (s == "주의").sum())
+        )
+        .sort_values("최대심도차", ascending=False)
+    )
+
+    with st.expander("장비유형별 편차 요약 보기"):
+        st.dataframe(type_summary.round(2), use_container_width=True, hide_index=True)
+
     with st.expander("구역별 인접 장비 편차 요약 보기"):
         st.dataframe(area_summary.round(2), use_container_width=True, hide_index=True)
 
@@ -710,7 +744,7 @@ if not adjacent_df.empty:
         st.dataframe(adjacent_df, use_container_width=True, hide_index=True)
 
 else:
-    st.info("서로 다른 장비가 인접 천공번호를 시공한 비교 사례를 찾지 못했습니다.")
+    st.info("동일 장비유형 내 서로 다른 장비가 인접 천공번호를 시공한 비교 사례를 찾지 못했습니다.")
 
 st.divider()
 
@@ -731,8 +765,8 @@ if not summary_df.empty:
 
 if not adjacent_df.empty:
     st.download_button(
-        "인접 천공 장비 비교 CSV 다운로드",
+        "동일유형 인접 천공 비교 CSV 다운로드",
         adjacent_df.to_csv(index=False).encode("utf-8-sig"),
-        file_name="인접천공_장비비교.csv",
+        file_name="동일유형_인접천공_장비비교.csv",
         mime="text/csv"
     )
