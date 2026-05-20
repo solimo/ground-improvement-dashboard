@@ -66,13 +66,45 @@ html { scroll-behavior: smooth; }
     line-height: 1.75;
 }
 
-.upload-panel {
+.upload-panel, .section-panel, .chart-panel, .text-panel {
     background: white;
-    padding: 30px;
     border-radius: 24px;
-    border: 1px solid #dbeafe;
-    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+    border: 1px solid #dbe3ef;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
+}
+
+.upload-panel {
+    padding: 30px;
     margin-bottom: 24px;
+}
+
+.section-panel {
+    padding: 24px;
+    margin-bottom: 26px;
+}
+
+.chart-panel {
+    padding: 20px 22px 10px 22px;
+    margin-bottom: 20px;
+}
+
+.text-panel {
+    padding: 22px 24px;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 6px;
+}
+
+.section-desc {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 16px;
 }
 
 .upload-title {
@@ -138,6 +170,7 @@ html { scroll-behavior: smooth; }
     border-radius: 16px;
     font-weight: 800;
     border: 1px solid #bbf7d0;
+    margin-top: 16px;
 }
 
 .status-watch {
@@ -147,6 +180,7 @@ html { scroll-behavior: smooth; }
     border-radius: 16px;
     font-weight: 800;
     border: 1px solid #fde68a;
+    margin-top: 16px;
 }
 
 .status-risk {
@@ -156,6 +190,7 @@ html { scroll-behavior: smooth; }
     border-radius: 16px;
     font-weight: 800;
     border: 1px solid #fecaca;
+    margin-top: 16px;
 }
 
 .side-nav {
@@ -201,6 +236,24 @@ html { scroll-behavior: smooth; }
 .anchor-offset {
     scroll-margin-top: 90px;
 }
+
+[data-testid="stDataFrame"] {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.stDownloadButton button, .stButton button {
+    border-radius: 14px !important;
+    font-weight: 800 !important;
+    padding: 0.7rem 1rem !important;
+}
+
+.stAlert {
+    border-radius: 16px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -239,6 +292,62 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+
+def styled_section(title, desc=None, anchor=None):
+    if anchor:
+        st.markdown(f'<div id="{anchor}" class="anchor-offset"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-panel">', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{title}</div>', unsafe_allow_html=True)
+    if desc:
+        st.markdown(f'<div class="section-desc">{desc}</div>', unsafe_allow_html=True)
+
+
+def end_section():
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+def chart_wrap_start(title=None, desc=None):
+    st.markdown('<div class="chart-panel">', unsafe_allow_html=True)
+    if title:
+        st.markdown(f'<div class="section-title" style="font-size:19px;">{title}</div>', unsafe_allow_html=True)
+    if desc:
+        st.markdown(f'<div class="section-desc">{desc}</div>', unsafe_allow_html=True)
+
+
+def chart_wrap_end():
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+def apply_chart_style(fig, height=420):
+    fig.update_layout(
+        height=height,
+        paper_bgcolor="white",
+        plot_bgcolor="#f8fafc",
+        font=dict(family="Arial", size=13, color="#334155"),
+        title=dict(font=dict(size=18, color="#0f172a")),
+        margin=dict(l=30, r=30, t=60, b=40),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        xaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            linecolor="#cbd5e1",
+            tickfont=dict(color="#475569")
+        ),
+        yaxis=dict(
+            gridcolor="#e2e8f0",
+            zeroline=False,
+            linecolor="#cbd5e1",
+            tickfont=dict(color="#475569")
+        )
+    )
+    return fig
 
 
 def to_num(x):
@@ -590,8 +699,11 @@ has_drilling = not drill_df.empty
 st.success("분석 결과가 생성되었습니다.")
 
 if has_status:
-    st.markdown('<div id="status-summary" class="anchor-offset"></div>', unsafe_allow_html=True)
-    st.subheader("공정 현황 요약")
+    styled_section(
+        "공정 현황 요약",
+        "지반개량공사 현황표 기준으로 전체 진행률, 잔여 물량, 최근 생산성, 예상 완료일을 요약합니다.",
+        "status-summary"
+    )
 
     total_design = summary_df["설계수량"].sum() if not summary_df.empty else 0
     total_done = summary_df["누계"].sum() if not summary_df.empty else 0
@@ -632,18 +744,19 @@ if has_status:
     with col4:
         st.markdown(f'<div class="metric-card"><div class="metric-title">표층 예상 완료일</div><div class="metric-value">{expected_finish_text}</div></div>', unsafe_allow_html=True)
 
-    st.divider()
+    end_section()
 
     st.markdown('<div id="progress-section" class="anchor-offset"></div>', unsafe_allow_html=True)
     left, right = st.columns([1.1, 1])
 
     with left:
-        st.subheader("1. 공종별 진행률")
+        styled_section("1. 공종별 진행률", "공종별 설계수량 대비 누계 기준 진행률을 비교합니다.")
 
         if not summary_df.empty:
             chart_df = summary_df.copy()
             chart_df["공종"] = chart_df["구분"].astype(str) + " " + chart_df["규격"].astype(str)
 
+            chart_wrap_start("공종별 진행률 그래프", "진행률이 낮은 공종은 우선 관리 대상으로 검토합니다.")
             fig = px.bar(
                 chart_df,
                 x="공종",
@@ -654,7 +767,9 @@ if has_status:
             )
             fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
             fig.update_layout(yaxis_title="진행률(%)", xaxis_title="공종")
+            fig = apply_chart_style(fig)
             st.plotly_chart(fig, use_container_width=True)
+            chart_wrap_end()
 
             with st.expander("공정 현황 상세표 보기"):
                 st.dataframe(
@@ -665,9 +780,10 @@ if has_status:
         else:
             st.info("공정 현황 총괄표 데이터가 없어 공종별 진행률은 표시하지 않습니다.")
 
+        end_section()
+
     with right:
-        st.markdown('<div id="schedule-section" class="anchor-offset"></div>', unsafe_allow_html=True)
-        st.subheader("2. 완료일 예측")
+        styled_section("2. 완료일 예측", "최근 작업 실적을 기준으로 표층 잔여 물량의 예상 완료일을 산정합니다.", "schedule-section")
 
         if not daily_df.empty:
             c1, c2 = st.columns(2)
@@ -678,15 +794,15 @@ if has_status:
         else:
             st.info("일자별 실적 데이터가 없어 완료일 예측은 표시하지 않습니다.")
 
+        end_section()
+
     if not daily_df.empty:
-        st.divider()
-        st.markdown('<div id="daily-section" class="anchor-offset"></div>', unsafe_allow_html=True)
-        st.subheader("3. 일자별 작업 실적 추이")
+        styled_section("3. 일자별 작업 실적 추이", "중층과 표층은 단위가 다르므로 그래프를 분리하여 표시합니다.", "daily-section")
 
         left, right = st.columns(2)
 
         with left:
-            st.markdown("#### 중층 작업 실적")
+            chart_wrap_start("중층 작업 실적", "CCM-T와 CCM 실적을 공 단위로 표시합니다.")
             middle_df = daily_df[["날짜", "CCM-T", "CCM"]].copy()
             middle_df["중층 합계"] = middle_df["CCM-T"] + middle_df["CCM"]
 
@@ -698,10 +814,12 @@ if has_status:
                 title="중층 작업 실적 추이"
             )
             fig_middle.update_layout(yaxis_title="중층 실적(공)", xaxis_title="날짜")
+            fig_middle = apply_chart_style(fig_middle)
             st.plotly_chart(fig_middle, use_container_width=True)
+            chart_wrap_end()
 
         with right:
-            st.markdown("#### 표층 작업 실적")
+            chart_wrap_start("표층 작업 실적", "표층 실적은 ㎡ 단위로 별도 표시합니다.")
             surface_df = daily_df[["날짜", "표층"]].copy()
 
             fig_surface = px.bar(
@@ -713,18 +831,20 @@ if has_status:
             )
             fig_surface.update_traces(texttemplate="%{text:.0f}", textposition="outside")
             fig_surface.update_layout(yaxis_title="표층 실적(㎡)", xaxis_title="날짜")
+            fig_surface = apply_chart_style(fig_surface)
             st.plotly_chart(fig_surface, use_container_width=True)
+            chart_wrap_end()
 
         with st.expander("일자별 실적 상세표 보기"):
             st.dataframe(daily_df, use_container_width=True, hide_index=True)
+
+        end_section()
 
 else:
     st.info("지반개량공사 현황표가 업로드되지 않았거나 인식되지 않아 공정률 관련 분석은 표시하지 않습니다.")
 
 if has_drilling:
-    st.divider()
-    st.markdown('<div id="drilling-section" class="anchor-offset"></div>', unsafe_allow_html=True)
-    st.subheader("4. CCM 천공일지 장비별 분석")
+    styled_section("4. CCM 천공일지 장비별 분석", "천공일지 기준 장비별 시공심도, 이상치, 구역별 천공 데이터를 분석합니다.", "drilling-section")
 
     normal_df = drill_df[drill_df["상태"] == "정상"]
 
@@ -748,6 +868,7 @@ if has_drilling:
     left, right = st.columns(2)
 
     with left:
+        chart_wrap_start("장비별 평균 시공심도", "장비 유형별 평균 시공심도를 비교합니다.")
         fig3 = px.bar(
             machine_summary,
             x="장비",
@@ -757,9 +878,12 @@ if has_drilling:
             title="장비별 평균 시공심도"
         )
         fig3.update_layout(yaxis_title="평균 시공심도(m)", xaxis_title="장비")
+        fig3 = apply_chart_style(fig3)
         st.plotly_chart(fig3, use_container_width=True)
+        chart_wrap_end()
 
     with right:
+        chart_wrap_start("구역별 천공 데이터 수", "대구역별 천공 데이터 수를 장비 유형 기준으로 표시합니다.")
         zone_count = (
             normal_df.groupby(["장비유형", "대구역"], as_index=False)
             .agg(천공수=("천공번호", "count"), 평균시공심도=("시공심도", "mean"))
@@ -773,15 +897,17 @@ if has_drilling:
             text="천공수",
             title="구역별 천공 데이터 수"
         )
+        fig4.update_layout(yaxis_title="천공 데이터 수", xaxis_title="구역")
+        fig4 = apply_chart_style(fig4)
         st.plotly_chart(fig4, use_container_width=True)
+        chart_wrap_end()
 
     with st.expander("천공 장비별 상세표 보기"):
         st.dataframe(machine_summary.round(2), use_container_width=True, hide_index=True)
 
-    st.divider()
-    st.markdown('<div id="adjacent-section" class="anchor-offset"></div>', unsafe_allow_html=True)
-    st.subheader("5. 동일 장비유형 인접 천공 TOP 10")
-    st.caption("※ 비교 기준: 삼축은 삼축끼리, 일축은 일축끼리만 비교합니다. 삼축↔일축 비교는 제외합니다.")
+    end_section()
+
+    styled_section("5. 동일 장비유형 인접 천공 TOP 10", "삼축은 삼축끼리, 일축은 일축끼리만 비교하며 삼축↔일축 비교는 제외합니다.", "adjacent-section")
 
     if not adjacent_df.empty:
         max_depth_diff = adjacent_df["심도차"].max()
@@ -808,6 +934,7 @@ if has_drilling:
             hide_index=True
         )
 
+        chart_wrap_start("인접 천공 심도차 TOP 10", "동일 장비유형 내에서 서로 다른 장비가 인접 시공한 구간만 표시합니다.")
         fig5 = px.bar(
             top_cases.sort_values("심도차"),
             x="심도차",
@@ -817,7 +944,9 @@ if has_drilling:
             title="동일 장비유형 인접 천공 심도차 TOP 10"
         )
         fig5.update_layout(xaxis_title="시공심도 차이(m)", yaxis_title="천공 구간")
+        fig5 = apply_chart_style(fig5)
         st.plotly_chart(fig5, use_container_width=True)
+        chart_wrap_end()
 
         type_summary = (
             adjacent_df.groupby("장비유형", as_index=False)
@@ -853,17 +982,16 @@ if has_drilling:
     else:
         st.info("동일 장비유형 내 서로 다른 장비가 인접 천공번호를 시공한 비교 사례를 찾지 못했습니다.")
 
+    end_section()
+
 else:
     st.info("CCM 천공일지가 업로드되지 않았거나 인식되지 않아 장비 간 편차 분석은 표시하지 않습니다.")
 
-st.divider()
-st.markdown('<div id="comment-section" class="anchor-offset"></div>', unsafe_allow_html=True)
-st.subheader("6. AI 종합 분석 의견")
+styled_section("6. AI 종합 분석 의견", "업로드된 데이터 기준으로 공정 현황과 천공 편차를 종합 요약합니다.", "comment-section")
 st.write(create_ai_comment(summary_df, daily_df, drill_df, adjacent_df))
+end_section()
 
-st.divider()
-st.markdown('<div id="download-section" class="anchor-offset"></div>', unsafe_allow_html=True)
-st.subheader("7. 데이터 다운로드")
+styled_section("7. 데이터 다운로드", "분석 결과를 CSV 파일로 저장하여 후속 보고서 작성에 활용할 수 있습니다.", "download-section")
 
 if has_status and not summary_df.empty:
     st.download_button(
@@ -880,3 +1008,5 @@ if has_drilling and not adjacent_df.empty:
         file_name="동일유형_인접천공_장비비교.csv",
         mime="text/csv"
     )
+
+end_section()
