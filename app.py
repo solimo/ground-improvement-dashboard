@@ -66,45 +66,13 @@ html { scroll-behavior: smooth; }
     line-height: 1.75;
 }
 
-.upload-panel, .section-panel, .chart-panel, .text-panel {
-    background: white;
-    border-radius: 24px;
-    border: 1px solid #dbe3ef;
-    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
-}
-
 .upload-panel {
+    background: white;
     padding: 30px;
+    border-radius: 24px;
+    border: 1px solid #dbeafe;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
     margin-bottom: 24px;
-}
-
-.section-panel {
-    padding: 24px;
-    margin-bottom: 26px;
-}
-
-.chart-panel {
-    padding: 20px 22px 10px 22px;
-    margin-bottom: 20px;
-}
-
-.text-panel {
-    padding: 22px 24px;
-    margin-bottom: 20px;
-}
-
-.section-title {
-    font-size: 24px;
-    font-weight: 900;
-    color: #0f172a;
-    margin-bottom: 6px;
-}
-
-.section-desc {
-    color: #64748b;
-    font-size: 14px;
-    line-height: 1.7;
-    margin-bottom: 16px;
 }
 
 .upload-title {
@@ -126,15 +94,14 @@ html { scroll-behavior: smooth; }
     border: 2px dashed #60a5fa;
     border-radius: 22px;
     padding: 28px;
-    min-height: 190px;
 }
 
 [data-testid="stFileUploaderDropzone"] {
     background: white;
     border: 2px dashed #93c5fd;
     border-radius: 18px;
-    min-height: 150px;
-    padding: 26px;
+    min-height: 130px;
+    padding: 24px;
 }
 
 [data-testid="stFileUploaderDropzone"]:hover {
@@ -149,18 +116,23 @@ html { scroll-behavior: smooth; }
     border: 1px solid #e2e8f0;
     text-align: center;
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+    min-height: 112px;
 }
 
 .metric-title {
     font-size: 14px;
     color: #64748b;
     margin-bottom: 8px;
+    white-space: normal;
 }
 
 .metric-value {
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 900;
     color: #0f172a;
+    line-height: 1.2;
+    word-break: keep-all;
+    white-space: normal;
 }
 
 .status-good {
@@ -237,11 +209,18 @@ html { scroll-behavior: smooth; }
     scroll-margin-top: 90px;
 }
 
-[data-testid="stDataFrame"] {
-    border-radius: 18px;
-    overflow: hidden;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+.section-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.section-desc {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 16px;
 }
 
 .stDownloadButton button, .stButton button {
@@ -254,98 +233,32 @@ html { scroll-behavior: smooth; }
     border-radius: 16px;
 }
 
+[data-testid="stDataFrame"] {
+    border-radius: 14px;
+    overflow: hidden;
+}
 </style>
 """, unsafe_allow_html=True)
 
-with st.sidebar:
-    st.markdown("## 공정 분석 시스템")
-    st.markdown("---")
-    st.markdown('<div class="side-section-title">분석 항목</div>', unsafe_allow_html=True)
-    st.markdown("""
-    <a class="side-nav" href="#upload-section">파일 업로드</a>
-    <a class="side-nav" href="#status-summary">공정 현황 요약</a>
-    <a class="side-nav" href="#progress-section">공종별 진행률</a>
-    <a class="side-nav" href="#schedule-section">완료일 예측</a>
-    <a class="side-nav" href="#daily-section">일자별 실적</a>
-    <a class="side-nav" href="#drilling-section">천공 장비 분석</a>
-    <a class="side-nav" href="#adjacent-section">장비 편차 분석</a>
-    <a class="side-nav" href="#comment-section">종합 의견</a>
-    <a class="side-nav" href="#download-section">데이터 다운로드</a>
-    """, unsafe_allow_html=True)
-    st.markdown("---")
-    st.markdown('<div class="side-section-title">비교 기준</div>', unsafe_allow_html=True)
-    st.markdown("""
-    <a class="side-nav" href="#adjacent-section">삼축 ↔ 삼축</a>
-    <a class="side-nav" href="#adjacent-section">일축 ↔ 일축</a>
-    <a class="side-nav" href="#adjacent-section">삼축 ↔ 일축 제외</a>
-    """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title">AI 기반 지반개량 현황 분석 및 공정 예측 시스템</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">지반개량공사 현황표와 CCM 천공일지를 기반으로 공정 현황, 생산성, 완료일, 장비 간 편차를 자동 분석합니다.</div>', unsafe_allow_html=True)
-
-st.markdown("""
-<div class="hero-card">
-    <div class="hero-title">지반개량 공정 데이터를 업로드하세요</div>
-    <div class="hero-desc">
-        현황표와 천공일지를 함께 업로드하면 공정 진행률, 잔여 물량, 예상 완료일,
-        장비별 시공심도, 동일 장비유형 내 인접 천공 편차를 한 번에 분석합니다.
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-
-def styled_section(title, desc=None, anchor=None):
+def section_header(title, desc=None, anchor=None):
     if anchor:
         st.markdown(f'<div id="{anchor}" class="anchor-offset"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-panel">', unsafe_allow_html=True)
     st.markdown(f'<div class="section-title">{title}</div>', unsafe_allow_html=True)
     if desc:
         st.markdown(f'<div class="section-desc">{desc}</div>', unsafe_allow_html=True)
 
 
-def end_section():
-    st.markdown('</div>', unsafe_allow_html=True)
-
-
-def chart_wrap_start(title=None, desc=None):
-    st.markdown('<div class="chart-panel">', unsafe_allow_html=True)
-    if title:
-        st.markdown(f'<div class="section-title" style="font-size:19px;">{title}</div>', unsafe_allow_html=True)
-    if desc:
-        st.markdown(f'<div class="section-desc">{desc}</div>', unsafe_allow_html=True)
-
-
-def chart_wrap_end():
-    st.markdown('</div>', unsafe_allow_html=True)
-
-
-def apply_chart_style(fig, height=420):
+def apply_chart_style(fig, height=410):
     fig.update_layout(
         height=height,
         paper_bgcolor="white",
         plot_bgcolor="#f8fafc",
-        font=dict(family="Arial", size=13, color="#334155"),
-        title=dict(font=dict(size=18, color="#0f172a")),
+        font=dict(size=13, color="#334155"),
         margin=dict(l=30, r=30, t=60, b=40),
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        ),
-        xaxis=dict(
-            showgrid=False,
-            zeroline=False,
-            linecolor="#cbd5e1",
-            tickfont=dict(color="#475569")
-        ),
-        yaxis=dict(
-            gridcolor="#e2e8f0",
-            zeroline=False,
-            linecolor="#cbd5e1",
-            tickfont=dict(color="#475569")
-        )
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        xaxis=dict(showgrid=False, zeroline=False, linecolor="#cbd5e1"),
+        yaxis=dict(gridcolor="#e2e8f0", zeroline=False, linecolor="#cbd5e1")
     )
     return fig
 
@@ -629,6 +542,35 @@ def create_ai_comment(summary, daily, drill_df, adjacent_df):
     return "\n\n".join(comments)
 
 
+with st.sidebar:
+    st.markdown("## 공정 분석 시스템")
+    st.markdown("---")
+    st.markdown("### 분석 항목")
+    st.markdown("""
+    <a class="side-nav" href="#upload-section">파일 업로드</a>
+    <a class="side-nav" href="#status-summary">공정 현황 요약</a>
+    <a class="side-nav" href="#progress-section">공종별 진행률</a>
+    <a class="side-nav" href="#schedule-section">완료일 예측</a>
+    <a class="side-nav" href="#daily-section">일자별 실적</a>
+    <a class="side-nav" href="#drilling-section">천공 장비 분석</a>
+    <a class="side-nav" href="#adjacent-section">장비 편차 분석</a>
+    <a class="side-nav" href="#comment-section">종합 의견</a>
+    <a class="side-nav" href="#download-section">데이터 다운로드</a>
+    """, unsafe_allow_html=True)
+
+st.markdown('<div class="main-title">AI 기반 지반개량 현황 분석 및 공정 예측 시스템</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">지반개량공사 현황표와 CCM 천공일지를 기반으로 공정 현황, 생산성, 완료일, 장비 간 편차를 자동 분석합니다.</div>', unsafe_allow_html=True)
+
+st.markdown("""
+<div class="hero-card">
+    <div class="hero-title">지반개량 공정 데이터를 업로드하세요</div>
+    <div class="hero-desc">
+        현황표와 천공일지를 함께 업로드하면 공정 진행률, 잔여 물량, 예상 완료일,
+        장비별 시공심도, 동일 장비유형 내 인접 천공 편차를 한 번에 분석합니다.
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 st.markdown('<div id="upload-section" class="anchor-offset"></div>', unsafe_allow_html=True)
 st.markdown("""
 <div class="upload-panel">
@@ -699,64 +641,58 @@ has_drilling = not drill_df.empty
 st.success("분석 결과가 생성되었습니다.")
 
 if has_status:
-    styled_section(
+    section_header(
         "공정 현황 요약",
         "지반개량공사 현황표 기준으로 전체 진행률, 잔여 물량, 최근 생산성, 예상 완료일을 요약합니다.",
         "status-summary"
     )
 
-    total_design = summary_df["설계수량"].sum() if not summary_df.empty else 0
-    total_done = summary_df["누계"].sum() if not summary_df.empty else 0
-    total_remaining = summary_df["잔여량"].sum() if not summary_df.empty else 0
-    total_progress = total_done / total_design * 100 if total_design > 0 else 0
+    with st.container(border=True):
+        total_design = summary_df["설계수량"].sum() if not summary_df.empty else 0
+        total_done = summary_df["누계"].sum() if not summary_df.empty else 0
+        total_remaining = summary_df["잔여량"].sum() if not summary_df.empty else 0
+        total_progress = total_done / total_design * 100 if total_design > 0 else 0
 
-    expected_finish_text = "-"
-    surface_recent_avg_text = "-"
-    middle_recent_avg_text = "-"
+        expected_finish_text = "-"
+        surface_recent_avg_text = "-"
+        middle_recent_avg_text = "-"
 
-    if not daily_df.empty:
-        daily_df = daily_df.sort_values("날짜")
-        daily_df["중층합계"] = daily_df["CCM-T"] + daily_df["CCM"]
+        if not daily_df.empty:
+            daily_df = daily_df.sort_values("날짜")
+            daily_df["중층합계"] = daily_df["CCM-T"] + daily_df["CCM"]
 
-        surface_recent_avg = daily_df.tail(7)["표층"].mean()
-        middle_recent_avg = daily_df.tail(7)["중층합계"].mean()
+            surface_recent_avg = daily_df.tail(7)["표층"].mean()
+            middle_recent_avg = daily_df.tail(7)["중층합계"].mean()
 
-        surface_recent_avg_text = f"{surface_recent_avg:,.1f}㎡/일"
-        middle_recent_avg_text = f"{middle_recent_avg:,.1f}공/일"
+            surface_recent_avg_text = f"{surface_recent_avg:,.1f}㎡/일"
+            middle_recent_avg_text = f"{middle_recent_avg:,.1f}공/일"
 
-        surface_summary = summary_df[summary_df["단위"].astype(str).str.contains("㎡", na=False)] if not summary_df.empty else pd.DataFrame()
-        surface_remaining = surface_summary["잔여량"].sum() if not surface_summary.empty else total_remaining
+            surface_summary = summary_df[summary_df["단위"].astype(str).str.contains("㎡", na=False)] if not summary_df.empty else pd.DataFrame()
+            surface_remaining = surface_summary["잔여량"].sum() if not surface_summary.empty else total_remaining
 
-        if surface_remaining > 0 and surface_recent_avg > 0:
-            last_date = daily_df["날짜"].max()
-            remain_days = surface_remaining / surface_recent_avg
-            expected_finish = last_date + timedelta(days=int(np.ceil(remain_days)))
-            expected_finish_text = expected_finish.strftime("%Y-%m-%d")
+            if surface_remaining > 0 and surface_recent_avg > 0:
+                last_date = daily_df["날짜"].max()
+                remain_days = surface_remaining / surface_recent_avg
+                expected_finish = last_date + timedelta(days=int(np.ceil(remain_days)))
+                expected_finish_text = expected_finish.strftime("%Y-%m-%d")
 
-    col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4 = st.columns(4)
 
-    with col1:
-        st.markdown(f'<div class="metric-card"><div class="metric-title">전체 진행률</div><div class="metric-value">{total_progress:.1f}%</div></div>', unsafe_allow_html=True)
-    with col2:
-        st.markdown(f'<div class="metric-card"><div class="metric-title">잔여 물량</div><div class="metric-value">{total_remaining:,.0f}</div></div>', unsafe_allow_html=True)
-    with col3:
-        st.markdown(f'<div class="metric-card"><div class="metric-title">표층 최근 평균</div><div class="metric-value">{surface_recent_avg_text}</div></div>', unsafe_allow_html=True)
-    with col4:
-        st.markdown(f'<div class="metric-card"><div class="metric-title">표층 예상 완료일</div><div class="metric-value">{expected_finish_text}</div></div>', unsafe_allow_html=True)
+        with col1:
+            st.markdown(f'<div class="metric-card"><div class="metric-title">전체 진행률</div><div class="metric-value">{total_progress:.1f}%</div></div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown(f'<div class="metric-card"><div class="metric-title">잔여 물량</div><div class="metric-value">{total_remaining:,.0f}</div></div>', unsafe_allow_html=True)
+        with col3:
+            st.markdown(f'<div class="metric-card"><div class="metric-title">표층 최근 평균</div><div class="metric-value">{surface_recent_avg_text}</div></div>', unsafe_allow_html=True)
+        with col4:
+            st.markdown(f'<div class="metric-card"><div class="metric-title">표층 예상 완료일</div><div class="metric-value">{expected_finish_text}</div></div>', unsafe_allow_html=True)
 
-    end_section()
-
-    st.markdown('<div id="progress-section" class="anchor-offset"></div>', unsafe_allow_html=True)
-    left, right = st.columns([1.1, 1])
-
-    with left:
-        styled_section("1. 공종별 진행률", "공종별 설계수량 대비 누계 기준 진행률을 비교합니다.")
-
+    section_header("1. 공종별 진행률", "공종별 설계수량 대비 누계 기준 진행률을 비교합니다.", "progress-section")
+    with st.container(border=True):
         if not summary_df.empty:
             chart_df = summary_df.copy()
             chart_df["공종"] = chart_df["구분"].astype(str) + " " + chart_df["규격"].astype(str)
 
-            chart_wrap_start("공종별 진행률 그래프", "진행률이 낮은 공종은 우선 관리 대상으로 검토합니다.")
             fig = px.bar(
                 chart_df,
                 x="공종",
@@ -769,7 +705,6 @@ if has_status:
             fig.update_layout(yaxis_title="진행률(%)", xaxis_title="공종")
             fig = apply_chart_style(fig)
             st.plotly_chart(fig, use_container_width=True)
-            chart_wrap_end()
 
             with st.expander("공정 현황 상세표 보기"):
                 st.dataframe(
@@ -777,236 +712,214 @@ if has_status:
                     use_container_width=True,
                     hide_index=True
                 )
-        else:
-            st.info("공정 현황 총괄표 데이터가 없어 공종별 진행률은 표시하지 않습니다.")
 
-        end_section()
-
-    with right:
-        styled_section("2. 완료일 예측", "최근 작업 실적을 기준으로 표층 잔여 물량의 예상 완료일을 산정합니다.", "schedule-section")
-
+    section_header("2. 완료일 예측", "최근 작업 실적을 기준으로 표층 잔여 물량의 예상 완료일을 산정합니다.", "schedule-section")
+    with st.container(border=True):
         if not daily_df.empty:
-            c1, c2 = st.columns(2)
+            c1, c2, c3 = st.columns(3)
             c1.metric("중층 최근 평균", middle_recent_avg_text)
             c2.metric("표층 최근 평균", surface_recent_avg_text)
-            st.metric("표층 기준 예상 완료일", expected_finish_text)
+            c3.metric("표층 기준 예상 완료일", expected_finish_text)
             st.caption("※ 중층은 공 단위, 표층은 ㎡ 단위로 산정되어 생산성 및 완료일 예측은 분리 해석합니다.")
-        else:
-            st.info("일자별 실적 데이터가 없어 완료일 예측은 표시하지 않습니다.")
-
-        end_section()
 
     if not daily_df.empty:
-        styled_section("3. 일자별 작업 실적 추이", "중층과 표층은 단위가 다르므로 그래프를 분리하여 표시합니다.", "daily-section")
-
+        section_header("3. 일자별 작업 실적 추이", "중층과 표층은 단위가 다르므로 그래프를 분리하여 표시합니다.", "daily-section")
         left, right = st.columns(2)
 
         with left:
-            chart_wrap_start("중층 작업 실적", "CCM-T와 CCM 실적을 공 단위로 표시합니다.")
-            middle_df = daily_df[["날짜", "CCM-T", "CCM"]].copy()
-            middle_df["중층 합계"] = middle_df["CCM-T"] + middle_df["CCM"]
+            with st.container(border=True):
+                st.markdown("#### 중층 작업 실적")
+                middle_df = daily_df[["날짜", "CCM-T", "CCM"]].copy()
+                middle_df["중층 합계"] = middle_df["CCM-T"] + middle_df["CCM"]
 
-            fig_middle = px.line(
-                middle_df,
-                x="날짜",
-                y=["CCM-T", "CCM", "중층 합계"],
-                markers=True,
-                title="중층 작업 실적 추이"
-            )
-            fig_middle.update_layout(yaxis_title="중층 실적(공)", xaxis_title="날짜")
-            fig_middle = apply_chart_style(fig_middle)
-            st.plotly_chart(fig_middle, use_container_width=True)
-            chart_wrap_end()
+                fig_middle = px.line(
+                    middle_df,
+                    x="날짜",
+                    y=["CCM-T", "CCM", "중층 합계"],
+                    markers=True,
+                    title="중층 작업 실적 추이"
+                )
+                fig_middle.update_layout(yaxis_title="중층 실적(공)", xaxis_title="날짜")
+                fig_middle = apply_chart_style(fig_middle)
+                st.plotly_chart(fig_middle, use_container_width=True)
 
         with right:
-            chart_wrap_start("표층 작업 실적", "표층 실적은 ㎡ 단위로 별도 표시합니다.")
-            surface_df = daily_df[["날짜", "표층"]].copy()
+            with st.container(border=True):
+                st.markdown("#### 표층 작업 실적")
+                surface_df = daily_df[["날짜", "표층"]].copy()
 
-            fig_surface = px.bar(
-                surface_df,
-                x="날짜",
-                y="표층",
-                text="표층",
-                title="표층 작업 실적 추이"
-            )
-            fig_surface.update_traces(texttemplate="%{text:.0f}", textposition="outside")
-            fig_surface.update_layout(yaxis_title="표층 실적(㎡)", xaxis_title="날짜")
-            fig_surface = apply_chart_style(fig_surface)
-            st.plotly_chart(fig_surface, use_container_width=True)
-            chart_wrap_end()
+                fig_surface = px.bar(
+                    surface_df,
+                    x="날짜",
+                    y="표층",
+                    text="표층",
+                    title="표층 작업 실적 추이"
+                )
+                fig_surface.update_traces(texttemplate="%{text:.0f}", textposition="outside")
+                fig_surface.update_layout(yaxis_title="표층 실적(㎡)", xaxis_title="날짜")
+                fig_surface = apply_chart_style(fig_surface)
+                st.plotly_chart(fig_surface, use_container_width=True)
 
         with st.expander("일자별 실적 상세표 보기"):
             st.dataframe(daily_df, use_container_width=True, hide_index=True)
-
-        end_section()
 
 else:
     st.info("지반개량공사 현황표가 업로드되지 않았거나 인식되지 않아 공정률 관련 분석은 표시하지 않습니다.")
 
 if has_drilling:
-    styled_section("4. CCM 천공일지 장비별 분석", "천공일지 기준 장비별 시공심도, 이상치, 구역별 천공 데이터를 분석합니다.", "drilling-section")
+    section_header("4. CCM 천공일지 장비별 분석", "천공일지 기준 장비별 시공심도, 이상치, 구역별 천공 데이터를 분석합니다.", "drilling-section")
 
-    normal_df = drill_df[drill_df["상태"] == "정상"]
+    with st.container(border=True):
+        normal_df = drill_df[drill_df["상태"] == "정상"]
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("천공 데이터 수", f"{len(drill_df):,}")
-    c2.metric("정상 데이터 수", f"{len(normal_df):,}")
-    c3.metric("이상치 수", f"{len(drill_df) - len(normal_df):,}")
-    c4.metric("평균 시공심도", f"{normal_df['시공심도'].mean():.2f}m")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("천공 데이터 수", f"{len(drill_df):,}")
+        c2.metric("정상 데이터 수", f"{len(normal_df):,}")
+        c3.metric("이상치 수", f"{len(drill_df) - len(normal_df):,}")
+        c4.metric("평균 시공심도", f"{normal_df['시공심도'].mean():.2f}m")
 
-    machine_summary = (
-        normal_df.groupby(["장비유형", "장비"], as_index=False)
-        .agg(
-            천공수=("천공번호", "count"),
-            평균설계심도=("설계심도", "mean"),
-            평균시공심도=("시공심도", "mean"),
-            평균편차=("계획대비편차", "mean")
-        )
-        .sort_values(["장비유형", "천공수"], ascending=[True, False])
-    )
-
-    left, right = st.columns(2)
-
-    with left:
-        chart_wrap_start("장비별 평균 시공심도", "장비 유형별 평균 시공심도를 비교합니다.")
-        fig3 = px.bar(
-            machine_summary,
-            x="장비",
-            y="평균시공심도",
-            color="장비유형",
-            text=machine_summary["평균시공심도"].round(2),
-            title="장비별 평균 시공심도"
-        )
-        fig3.update_layout(yaxis_title="평균 시공심도(m)", xaxis_title="장비")
-        fig3 = apply_chart_style(fig3)
-        st.plotly_chart(fig3, use_container_width=True)
-        chart_wrap_end()
-
-    with right:
-        chart_wrap_start("구역별 천공 데이터 수", "대구역별 천공 데이터 수를 장비 유형 기준으로 표시합니다.")
-        zone_count = (
-            normal_df.groupby(["장비유형", "대구역"], as_index=False)
-            .agg(천공수=("천공번호", "count"), 평균시공심도=("시공심도", "mean"))
+        machine_summary = (
+            normal_df.groupby(["장비유형", "장비"], as_index=False)
+            .agg(
+                천공수=("천공번호", "count"),
+                평균설계심도=("설계심도", "mean"),
+                평균시공심도=("시공심도", "mean"),
+                평균편차=("계획대비편차", "mean")
+            )
+            .sort_values(["장비유형", "천공수"], ascending=[True, False])
         )
 
-        fig4 = px.bar(
-            zone_count,
-            x="대구역",
-            y="천공수",
-            color="장비유형",
-            text="천공수",
-            title="구역별 천공 데이터 수"
-        )
-        fig4.update_layout(yaxis_title="천공 데이터 수", xaxis_title="구역")
-        fig4 = apply_chart_style(fig4)
-        st.plotly_chart(fig4, use_container_width=True)
-        chart_wrap_end()
+        left, right = st.columns(2)
 
-    with st.expander("천공 장비별 상세표 보기"):
-        st.dataframe(machine_summary.round(2), use_container_width=True, hide_index=True)
+        with left:
+            fig3 = px.bar(
+                machine_summary,
+                x="장비",
+                y="평균시공심도",
+                color="장비유형",
+                text=machine_summary["평균시공심도"].round(2),
+                title="장비별 평균 시공심도"
+            )
+            fig3.update_layout(yaxis_title="평균 시공심도(m)", xaxis_title="장비")
+            fig3 = apply_chart_style(fig3)
+            st.plotly_chart(fig3, use_container_width=True)
 
-    end_section()
+        with right:
+            zone_count = (
+                normal_df.groupby(["장비유형", "대구역"], as_index=False)
+                .agg(천공수=("천공번호", "count"), 평균시공심도=("시공심도", "mean"))
+            )
 
-    styled_section("5. 동일 장비유형 인접 천공 TOP 10", "삼축은 삼축끼리, 일축은 일축끼리만 비교하며 삼축↔일축 비교는 제외합니다.", "adjacent-section")
+            fig4 = px.bar(
+                zone_count,
+                x="대구역",
+                y="천공수",
+                color="장비유형",
+                text="천공수",
+                title="구역별 천공 데이터 수"
+            )
+            fig4.update_layout(yaxis_title="천공 데이터 수", xaxis_title="구역")
+            fig4 = apply_chart_style(fig4)
+            st.plotly_chart(fig4, use_container_width=True)
 
-    if not adjacent_df.empty:
-        max_depth_diff = adjacent_df["심도차"].max()
+        with st.expander("천공 장비별 상세표 보기"):
+            st.dataframe(machine_summary.round(2), use_container_width=True, hide_index=True)
 
-        if max_depth_diff >= 3:
-            st.markdown(f'<div class="status-risk">주의: 동일 장비유형 내 인접 천공 장비 간 최대 심도차가 {max_depth_diff:.2f}m로 확인되었습니다.</div>', unsafe_allow_html=True)
-        elif max_depth_diff >= 2:
-            st.markdown(f'<div class="status-watch">관찰: 동일 장비유형 내 인접 천공 장비 간 심도차가 일부 확인됩니다.</div>', unsafe_allow_html=True)
+    section_header("5. 동일 장비유형 인접 천공 TOP 10", "삼축은 삼축끼리, 일축은 일축끼리만 비교하며 삼축↔일축 비교는 제외합니다.", "adjacent-section")
+
+    with st.container(border=True):
+        if not adjacent_df.empty:
+            max_depth_diff = adjacent_df["심도차"].max()
+
+            if max_depth_diff >= 3:
+                st.markdown(f'<div class="status-risk">주의: 동일 장비유형 내 인접 천공 장비 간 최대 심도차가 {max_depth_diff:.2f}m로 확인되었습니다.</div>', unsafe_allow_html=True)
+            elif max_depth_diff >= 2:
+                st.markdown(f'<div class="status-watch">관찰: 동일 장비유형 내 인접 천공 장비 간 심도차가 일부 확인됩니다.</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="status-good">양호: 동일 장비유형 내 장비 간 편차가 관리 가능한 수준입니다.</div>', unsafe_allow_html=True)
+
+            top_cases = adjacent_df.head(10).copy()
+            top_cases["비교구간"] = top_cases.apply(lambda x: f"{x['구역']} {x['천공번호1']}~{x['천공번호2']}", axis=1)
+            top_cases["장비비교"] = top_cases.apply(lambda x: f"{x['장비1']} ↔ {x['장비2']}", axis=1)
+
+            c1, c2, c3 = st.columns(3)
+            c1.metric("동일유형 인접 비교", f"{len(adjacent_df):,}건")
+            c2.metric("평균 심도차", f"{adjacent_df['심도차'].mean():.2f}m")
+            c3.metric("최대 심도차", f"{adjacent_df['심도차'].max():.2f}m")
+
+            st.dataframe(
+                top_cases[["비교유형", "비교구간", "장비비교", "시공심도1", "시공심도2", "심도차", "검토등급"]],
+                use_container_width=True,
+                hide_index=True
+            )
+
+            fig5 = px.bar(
+                top_cases.sort_values("심도차"),
+                x="심도차",
+                y="비교구간",
+                color="장비유형",
+                orientation="h",
+                title="동일 장비유형 인접 천공 심도차 TOP 10"
+            )
+            fig5.update_layout(xaxis_title="시공심도 차이(m)", yaxis_title="천공 구간")
+            fig5 = apply_chart_style(fig5)
+            st.plotly_chart(fig5, use_container_width=True)
+
+            type_summary = (
+                adjacent_df.groupby("장비유형", as_index=False)
+                .agg(
+                    비교사례수=("심도차", "count"),
+                    평균심도차=("심도차", "mean"),
+                    최대심도차=("심도차", "max"),
+                    주의사례수=("검토등급", lambda s: (s == "주의").sum())
+                )
+                .sort_values("최대심도차", ascending=False)
+            )
+
+            area_summary = (
+                adjacent_df.groupby(["장비유형", "대구역"], as_index=False)
+                .agg(
+                    비교사례수=("심도차", "count"),
+                    평균심도차=("심도차", "mean"),
+                    최대심도차=("심도차", "max"),
+                    주의사례수=("검토등급", lambda s: (s == "주의").sum())
+                )
+                .sort_values("최대심도차", ascending=False)
+            )
+
+            with st.expander("장비유형별 편차 요약 보기"):
+                st.dataframe(type_summary.round(2), use_container_width=True, hide_index=True)
+
+            with st.expander("구역별 인접 장비 편차 요약 보기"):
+                st.dataframe(area_summary.round(2), use_container_width=True, hide_index=True)
+
+            with st.expander("인접 천공 장비 비교 전체 목록 보기"):
+                st.dataframe(adjacent_df, use_container_width=True, hide_index=True)
+
         else:
-            st.markdown('<div class="status-good">양호: 동일 장비유형 내 장비 간 편차가 관리 가능한 수준입니다.</div>', unsafe_allow_html=True)
-
-        top_cases = adjacent_df.head(10).copy()
-        top_cases["비교구간"] = top_cases.apply(lambda x: f"{x['구역']} {x['천공번호1']}~{x['천공번호2']}", axis=1)
-        top_cases["장비비교"] = top_cases.apply(lambda x: f"{x['장비1']} ↔ {x['장비2']}", axis=1)
-
-        c1, c2, c3 = st.columns(3)
-        c1.metric("동일유형 인접 비교", f"{len(adjacent_df):,}건")
-        c2.metric("평균 심도차", f"{adjacent_df['심도차'].mean():.2f}m")
-        c3.metric("최대 심도차", f"{adjacent_df['심도차'].max():.2f}m")
-
-        st.dataframe(
-            top_cases[["비교유형", "비교구간", "장비비교", "시공심도1", "시공심도2", "심도차", "검토등급"]],
-            use_container_width=True,
-            hide_index=True
-        )
-
-        chart_wrap_start("인접 천공 심도차 TOP 10", "동일 장비유형 내에서 서로 다른 장비가 인접 시공한 구간만 표시합니다.")
-        fig5 = px.bar(
-            top_cases.sort_values("심도차"),
-            x="심도차",
-            y="비교구간",
-            color="장비유형",
-            orientation="h",
-            title="동일 장비유형 인접 천공 심도차 TOP 10"
-        )
-        fig5.update_layout(xaxis_title="시공심도 차이(m)", yaxis_title="천공 구간")
-        fig5 = apply_chart_style(fig5)
-        st.plotly_chart(fig5, use_container_width=True)
-        chart_wrap_end()
-
-        type_summary = (
-            adjacent_df.groupby("장비유형", as_index=False)
-            .agg(
-                비교사례수=("심도차", "count"),
-                평균심도차=("심도차", "mean"),
-                최대심도차=("심도차", "max"),
-                주의사례수=("검토등급", lambda s: (s == "주의").sum())
-            )
-            .sort_values("최대심도차", ascending=False)
-        )
-
-        area_summary = (
-            adjacent_df.groupby(["장비유형", "대구역"], as_index=False)
-            .agg(
-                비교사례수=("심도차", "count"),
-                평균심도차=("심도차", "mean"),
-                최대심도차=("심도차", "max"),
-                주의사례수=("검토등급", lambda s: (s == "주의").sum())
-            )
-            .sort_values("최대심도차", ascending=False)
-        )
-
-        with st.expander("장비유형별 편차 요약 보기"):
-            st.dataframe(type_summary.round(2), use_container_width=True, hide_index=True)
-
-        with st.expander("구역별 인접 장비 편차 요약 보기"):
-            st.dataframe(area_summary.round(2), use_container_width=True, hide_index=True)
-
-        with st.expander("인접 천공 장비 비교 전체 목록 보기"):
-            st.dataframe(adjacent_df, use_container_width=True, hide_index=True)
-
-    else:
-        st.info("동일 장비유형 내 서로 다른 장비가 인접 천공번호를 시공한 비교 사례를 찾지 못했습니다.")
-
-    end_section()
+            st.info("동일 장비유형 내 서로 다른 장비가 인접 천공번호를 시공한 비교 사례를 찾지 못했습니다.")
 
 else:
     st.info("CCM 천공일지가 업로드되지 않았거나 인식되지 않아 장비 간 편차 분석은 표시하지 않습니다.")
 
-styled_section("6. AI 종합 분석 의견", "업로드된 데이터 기준으로 공정 현황과 천공 편차를 종합 요약합니다.", "comment-section")
-st.write(create_ai_comment(summary_df, daily_df, drill_df, adjacent_df))
-end_section()
+section_header("6. AI 종합 분석 의견", "업로드된 데이터 기준으로 공정 현황과 천공 편차를 종합 요약합니다.", "comment-section")
+with st.container(border=True):
+    st.write(create_ai_comment(summary_df, daily_df, drill_df, adjacent_df))
 
-styled_section("7. 데이터 다운로드", "분석 결과를 CSV 파일로 저장하여 후속 보고서 작성에 활용할 수 있습니다.", "download-section")
+section_header("7. 데이터 다운로드", "분석 결과를 CSV 파일로 저장하여 후속 보고서 작성에 활용할 수 있습니다.", "download-section")
+with st.container(border=True):
+    if has_status and not summary_df.empty:
+        st.download_button(
+            "공정 현황 요약 CSV 다운로드",
+            summary_df.to_csv(index=False).encode("utf-8-sig"),
+            file_name="공정현황_요약.csv",
+            mime="text/csv"
+        )
 
-if has_status and not summary_df.empty:
-    st.download_button(
-        "공정 현황 요약 CSV 다운로드",
-        summary_df.to_csv(index=False).encode("utf-8-sig"),
-        file_name="공정현황_요약.csv",
-        mime="text/csv"
-    )
-
-if has_drilling and not adjacent_df.empty:
-    st.download_button(
-        "동일유형 인접 천공 비교 CSV 다운로드",
-        adjacent_df.to_csv(index=False).encode("utf-8-sig"),
-        file_name="동일유형_인접천공_장비비교.csv",
-        mime="text/csv"
-    )
-
-end_section()
+    if has_drilling and not adjacent_df.empty:
+        st.download_button(
+            "동일유형 인접 천공 비교 CSV 다운로드",
+            adjacent_df.to_csv(index=False).encode("utf-8-sig"),
+            file_name="동일유형_인접천공_장비비교.csv",
+            mime="text/csv"
+        )
