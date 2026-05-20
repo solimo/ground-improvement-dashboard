@@ -35,6 +35,10 @@ html { scroll-behavior: smooth; }
     color: #f8fafc !important;
 }
 
+[data-testid="stSidebar"] .block-container {
+    padding-top: 1rem;
+}
+
 .logo-box {
     padding-top: 10px;
     padding-bottom: 10px;
@@ -574,7 +578,7 @@ def create_ai_comment(summary, daily, drill_df, adjacent_df):
 with st.sidebar:
     if Path(LOGO_PATH).exists():
         st.markdown('<div class="logo-box">', unsafe_allow_html=True)
-        st.image(LOGO_PATH, use_container_width=True)
+        st.image(LOGO_PATH, width=240)
         st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.caption("로고 파일 없음: cj_logo.png")
