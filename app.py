@@ -387,15 +387,45 @@ if not daily_df.empty:
     c2.metric("예상 잔여일", "-" if pd.isna(remain_days) else f"{remain_days:.1f}일")
     c3.metric("예상 완료일", "-" if expected_finish is None else expected_finish.strftime("%Y-%m-%d"))
 
-    fig2 = px.line(
-        daily_df,
+  st.markdown("#### 일자별 작업 실적 추이")
+
+left, right = st.columns(2)
+
+with left:
+    st.markdown("##### 중층 작업 실적")
+    middle_df = daily_df[["날짜", "CCM-T", "CCM"]].copy()
+    middle_df["중층 합계"] = middle_df["CCM-T"] + middle_df["CCM"]
+
+    fig_middle = px.line(
+        middle_df,
         x="날짜",
-        y=["CCM-T", "CCM", "표층", "합계"],
+        y=["CCM-T", "CCM", "중층 합계"],
         markers=True,
-        title="일자별 작업 실적 추이"
+        title="중층 작업 실적 추이"
     )
-    fig2.update_layout(yaxis_title="일일 실적", xaxis_title="날짜")
-    st.plotly_chart(fig2, use_container_width=True)
+    fig_middle.update_layout(
+        yaxis_title="중층 실적(공)",
+        xaxis_title="날짜"
+    )
+    st.plotly_chart(fig_middle, use_container_width=True)
+
+with right:
+    st.markdown("##### 표층 작업 실적")
+    surface_df = daily_df[["날짜", "표층"]].copy()
+
+    fig_surface = px.bar(
+        surface_df,
+        x="날짜",
+        y="표층",
+        text="표층",
+        title="표층 작업 실적 추이"
+    )
+    fig_surface.update_traces(texttemplate="%{text:.0f}", textposition="outside")
+    fig_surface.update_layout(
+        yaxis_title="표층 실적(㎡)",
+        xaxis_title="날짜"
+    )
+    st.plotly_chart(fig_surface, use_container_width=True)
 
     st.dataframe(daily_df, use_container_width=True)
 
