@@ -217,7 +217,6 @@ with st.sidebar:
     st.markdown("""
     <a class="side-nav" href="#adjacent">삼축 ↔ 삼축</a>
     <a class="side-nav" href="#adjacent">일축 ↔ 일축</a>
-    <a class="side-nav" href="#adjacent">삼축 ↔ 일축 제외</a>
     """, unsafe_allow_html=True)
 
 st.markdown('<div class="main-title">AI 기반 지반개량 현황 분석 및 공정 예측 시스템</div>', unsafe_allow_html=True)
