@@ -201,6 +201,7 @@ html { scroll-behavior: smooth; }
 """, unsafe_allow_html=True)
 
 with st.sidebar:
+    st.markdown("## CJ제일제당 저온HUB센터 신축공사")
     st.markdown("## 공정 분석 시스템")
     st.markdown("---")
     st.markdown('<div class="side-section-title">분석 항목</div>', unsafe_allow_html=True)
