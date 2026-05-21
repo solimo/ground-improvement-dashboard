@@ -629,13 +629,8 @@ st.markdown("""
 <div class="upload-panel">
     <div class="upload-title">분석 파일 업로드</div>
     <div class="upload-desc">
-        아래 영역에 지반개량공사 현황표와 CCM 천공일지를 드래그앤드롭하거나 클릭하여 선택하세요.
-        현황표만 업로드하면 공정률 분석만, 천공일지만 업로드하면 장비 편차 분석만 표시됩니다.
+        아래 영역에 공정현황 파일을 드래그앤드롭하거나 클릭하여 선택하세요.
     </div>
-    <span class="small-chip">현황표 XLSX</span>
-    <span class="small-chip">천공일지 XLSX</span>
-    <span class="small-chip">다중 파일 업로드 가능</span>
-    <span class="small-chip">드래그앤드롭 지원</span>
 </div>
 """, unsafe_allow_html=True)
 
