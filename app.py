@@ -1480,8 +1480,8 @@ with st.container(border=True):
         else:
             st.info("동일 장비유형 내 서로 다른 장비가 인접 천공번호를 시공한 비교 사례를 찾지 못했습니다.")
 
-else:
-    st.info("CCM 천공일지가 업로드되지 않았거나 인식되지 않아 장비 간 편차 분석은 표시하지 않습니다.")
+        else:
+            st.info("CCM 천공일지가 업로드되지 않았거나 인식되지 않아 장비 간 편차 분석은 표시하지 않습니다.")
 
 section_header("7. AI 종합 분석 의견", "업로드된 데이터 기준으로 공정 현황과 천공 편차를 종합 요약합니다.", "comment-section")
 with st.container(border=True):
