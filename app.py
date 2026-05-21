@@ -1477,8 +1477,8 @@ with st.container(border=True):
             with st.expander("인접 천공 장비 비교 전체 목록 보기"):
                 st.dataframe(adjacent_df, use_container_width=True, hide_index=True)
 
-            else:
-                st.info("동일 장비유형 내 서로 다른 장비가 인접 천공번호를 시공한 비교 사례를 찾지 못했습니다.")
+                    else:
+                        st.info("동일 장비유형 내 서로 다른 장비가 인접 천공번호를 시공한 비교 사례를 찾지 못했습니다.")
 
             else:
                 st.info("CCM 천공일지가 업로드되지 않았거나 인식되지 않아 장비 간 편차 분석은 표시하지 않습니다.")
