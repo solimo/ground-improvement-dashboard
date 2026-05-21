@@ -811,7 +811,7 @@ if has_status:
                 y="진행률",
                 color="구분",
                 text=chart_df["진행률"].round(1),
-                title="공종별 진행률"
+                title="공종별 진행률",
                 color_discrete_sequence=["#2563eb","#38bdf8","#0ea5e9","#1d4ed8"]
             )
             fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
