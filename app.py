@@ -609,11 +609,10 @@ with st.sidebar:
 st.markdown("""
 <div class="main-title">
 <br>
-AI 기반 지반개량 현황 분석 및<br>
-공정 예측 시스템
+AI 기반 공정 분석 시스템
 </div>
 """, unsafe_allow_html=True)
-st.markdown('<div class="sub-title">지반개량공사 현황표와 CCM 천공일지를 기반으로 공정 현황, 생산성, 완료일, 장비 간 편차를 자동 분석합니다.</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">입력한 데이터를 바탕으로 공정 현황, 생산성, 완료일을 자동 분석합니다.</div>', unsafe_allow_html=True)
 
 st.markdown("""
 <div class="hero-card">
