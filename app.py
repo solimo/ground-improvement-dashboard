@@ -610,8 +610,9 @@ def create_ai_comment(summary, daily, drill_df, adjacent_df):
     if not drill_df.empty and "부족심도" in drill_df.columns:
         shortage_df = drill_df[(drill_df["상태"] == "정상") & (drill_df["부족심도"] > 0)]
         if not shortage_df.empty:
+            top = shortage_df.sort_values("부족심도", ascending=False).iloc[0]
             comments.append(
-                f"설계심도 대비 부족공은 {len(shortage_df):,}공이며, 최대 부족심도는 {shortage_df['부족심도'].max():.2f}m입니다."
+                f"설계심도 대비 부족심도는 {top['구역']} {int(top['천공번호'])}번공에서 최대 {top['부족심도']:.2f}m로 확인됩니다."
             )
 
     if not adjacent_df.empty:
@@ -644,7 +645,7 @@ with st.sidebar:
     <a class="side-nav" href="#schedule-section">완료일 예측</a>
     <a class="side-nav" href="#daily-section">일자별 실적</a>
     <a class="side-nav" href="#drilling-section">장비 분석</a>
-    <a class="side-nav" href="#shortage-section">부족공 분석</a>
+    <a class="side-nav" href="#shortage-section">부족심도 분석</a>
     <a class="side-nav" href="#adjacent-section">장비 편차 분석</a>
     <a class="side-nav" href="#comment-section">종합 의견</a>
     <a class="side-nav" href="#download-section">데이터 다운로드</a>
@@ -661,7 +662,7 @@ st.markdown("""
     <div class="hero-title">공정 데이터를 업로드하세요</div>
     <div class="hero-desc">
         현황표와 천공일지를 함께 업로드하면 공정 진행률, 잔여 물량, 예상 완료일,
-        장비별 시공심도, 설계심도 대비 부족공, 동일 장비유형 내 인접 천공 편차를 한 번에 분석합니다.
+        장비별 시공심도, 설계심도 대비 부족심도, 동일 장비유형 내 인접 천공 편차를 한 번에 분석합니다.
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -675,7 +676,7 @@ st.markdown("""
     </div>
     <span class="small-chip">현황표 XLSX</span>
     <span class="small-chip">천공일지 XLSX</span>
-    <span class="small-chip">부족공 분석</span>
+    <span class="small-chip">부족심도 분석</span>
     <span class="small-chip">드래그앤드롭</span>
 </div>
 """, unsafe_allow_html=True)
@@ -735,7 +736,11 @@ has_drilling = not drill_df.empty
 st.success("분석 결과가 생성되었습니다.")
 
 if has_status:
-    section_header("공정 현황 요약", "지반개량공사 현황표 기준으로 전체 진행률, 잔여 물량, 최근 생산성, 예상 완료일을 요약합니다.", "status-summary")
+    section_header(
+        "공정 현황 요약",
+        "지반개량공사 현황표 기준으로 전체 진행률, 잔여 물량, 최근 생산성, 예상 완료일을 요약합니다.",
+        "status-summary"
+    )
 
     with st.container(border=True):
         total_design = summary_df["설계수량"].sum() if not summary_df.empty else 0
@@ -796,7 +801,11 @@ if has_status:
             st.plotly_chart(fig, use_container_width=True)
 
             with st.expander("공정 현황 상세표 보기"):
-                st.dataframe(summary_df[["구분", "규격", "단위", "설계수량", "전일", "누계", "잔여량", "진행률"]], use_container_width=True, hide_index=True)
+                st.dataframe(
+                    summary_df[["구분", "규격", "단위", "설계수량", "전일", "누계", "잔여량", "진행률"]],
+                    use_container_width=True,
+                    hide_index=True
+                )
 
     section_header("2. 완료일 예측", "최근 작업 실적을 기준으로 표층 잔여 물량의 예상 완료일을 산정합니다.", "schedule-section")
     with st.container(border=True):
@@ -809,6 +818,7 @@ if has_status:
 
     if not daily_df.empty:
         section_header("3. 일자별 작업 실적 추이", "중층과 표층은 단위가 다르므로 그래프를 분리하여 표시합니다.", "daily-section")
+
         left, right = st.columns(2)
 
         with left:
@@ -816,7 +826,14 @@ if has_status:
                 st.markdown("#### 중층 작업 실적")
                 middle_df = daily_df[["날짜", "CCM-T", "CCM"]].copy()
                 middle_df["중층 합계"] = middle_df["CCM-T"] + middle_df["CCM"]
-                fig_middle = px.line(middle_df, x="날짜", y=["CCM-T", "CCM", "중층 합계"], markers=True, title="중층 작업 실적 추이", color_discrete_sequence=COLOR_SEQ)
+                fig_middle = px.line(
+                    middle_df,
+                    x="날짜",
+                    y=["CCM-T", "CCM", "중층 합계"],
+                    markers=True,
+                    title="중층 작업 실적 추이",
+                    color_discrete_sequence=COLOR_SEQ
+                )
                 fig_middle.update_traces(line=dict(width=4), marker=dict(size=8))
                 fig_middle.update_layout(yaxis_title="중층 실적(공)", xaxis_title="날짜")
                 fig_middle = apply_chart_style(fig_middle, height=540)
@@ -826,7 +843,14 @@ if has_status:
             with st.container(border=True):
                 st.markdown("#### 표층 작업 실적")
                 surface_df = daily_df[["날짜", "표층"]].copy()
-                fig_surface = px.bar(surface_df, x="날짜", y="표층", text="표층", title="표층 작업 실적 추이", color_discrete_sequence=["#005BAC"])
+                fig_surface = px.bar(
+                    surface_df,
+                    x="날짜",
+                    y="표층",
+                    text="표층",
+                    title="표층 작업 실적 추이",
+                    color_discrete_sequence=["#005BAC"]
+                )
                 fig_surface.update_traces(texttemplate="%{text:.0f}", textposition="outside", textfont_size=16)
                 fig_surface.update_layout(yaxis_title="표층 실적(㎡)", xaxis_title="날짜")
                 fig_surface = apply_chart_style(fig_surface, height=540, legend=False)
@@ -838,7 +862,11 @@ else:
     st.info("지반개량공사 현황표가 업로드되지 않았거나 인식되지 않아 공정률 관련 분석은 표시하지 않습니다.")
 
 if has_drilling:
-    section_header("4. CCM 천공일지 장비별 분석", "천공일지 기준 장비별 시공심도, 이상치, 구역별 천공 데이터를 분석합니다.", "drilling-section")
+    section_header(
+        "4. CCM 천공일지 장비별 분석",
+        "천공일지 기준 장비별 시공심도, 이상치, 구역별 천공 데이터를 분석합니다.",
+        "drilling-section"
+    )
 
     with st.container(border=True):
         normal_df = drill_df[drill_df["상태"] == "정상"]
@@ -855,9 +883,7 @@ if has_drilling:
                 천공수=("천공번호", "count"),
                 평균설계심도=("설계심도", "mean"),
                 평균시공심도=("시공심도", "mean"),
-                평균편차=("계획대비편차", "mean"),
-                부족공수=("부족심도", lambda s: (s > 0).sum()),
-                총부족심도=("부족심도", "sum")
+                평균편차=("계획대비편차", "mean")
             )
             .sort_values(["장비유형", "천공수"], ascending=[True, False])
         )
@@ -865,7 +891,15 @@ if has_drilling:
         left, right = st.columns(2)
 
         with left:
-            fig3 = px.bar(machine_summary, x="장비", y="평균시공심도", color="장비유형", text=machine_summary["평균시공심도"].round(2), title="장비별 평균 시공심도", color_discrete_sequence=COLOR_SEQ)
+            fig3 = px.bar(
+                machine_summary,
+                x="장비",
+                y="평균시공심도",
+                color="장비유형",
+                text=machine_summary["평균시공심도"].round(2),
+                title="장비별 평균 시공심도",
+                color_discrete_sequence=COLOR_SEQ
+            )
             fig3.update_traces(textposition="inside", textfont_size=17, textfont_color="white")
             fig3.update_layout(yaxis_title="평균 시공심도(m)", xaxis_title="장비")
             fig3 = apply_chart_style(fig3, height=540)
@@ -873,8 +907,19 @@ if has_drilling:
             st.plotly_chart(fig3, use_container_width=True)
 
         with right:
-            zone_count = normal_df.groupby(["장비유형", "대구역"], as_index=False).agg(천공수=("천공번호", "count"), 평균시공심도=("시공심도", "mean"))
-            fig4 = px.bar(zone_count, x="대구역", y="천공수", color="장비유형", text="천공수", title="구역별 천공 데이터 수", color_discrete_sequence=COLOR_SEQ)
+            zone_count = normal_df.groupby(["장비유형", "대구역"], as_index=False).agg(
+                천공수=("천공번호", "count"),
+                평균시공심도=("시공심도", "mean")
+            )
+            fig4 = px.bar(
+                zone_count,
+                x="대구역",
+                y="천공수",
+                color="장비유형",
+                text="천공수",
+                title="구역별 천공 데이터 수",
+                color_discrete_sequence=COLOR_SEQ
+            )
             fig4.update_traces(textposition="inside", textfont_size=17, textfont_color="white")
             fig4.update_layout(yaxis_title="천공 데이터 수", xaxis_title="구역")
             fig4 = apply_chart_style(fig4, height=540)
@@ -883,7 +928,11 @@ if has_drilling:
         with st.expander("천공 장비별 상세표 보기"):
             st.dataframe(machine_summary.round(2), use_container_width=True, hide_index=True)
 
-    section_header("5. 설계심도 대비 부족공 분석", "설계심도 대비 실제 시공심도가 부족한 천공 위치를 분석합니다.", "shortage-section")
+    section_header(
+        "5. 설계심도 대비 부족심도 분석",
+        "설계심도보다 실제 시공심도가 부족한 공을 위치별로 표시합니다.",
+        "shortage-section"
+    )
 
     with st.container(border=True):
         shortage_df = normal_df[
@@ -892,93 +941,59 @@ if has_drilling:
             (normal_df["부족심도"] > 0)
         ].copy()
 
-        total_holes = len(normal_df)
-        shortage_count = len(shortage_df)
-        shortage_rate = shortage_count / total_holes * 100 if total_holes > 0 else 0
-        max_shortage = shortage_df["부족심도"].max() if not shortage_df.empty else 0
-        total_shortage = shortage_df["부족심도"].sum() if not shortage_df.empty else 0
-
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("전체 천공 수", f"{total_holes:,}공")
-        c2.metric("부족공 수", f"{shortage_count:,}공")
-        c3.metric("부족공 비율", f"{shortage_rate:.1f}%")
-        c4.metric("총 부족심도", f"{total_shortage:.2f}m")
-
         if not shortage_df.empty:
-            top_shortage = shortage_df.sort_values("부족심도", ascending=False).head(10)
+            shortage_df = shortage_df.sort_values("부족심도", ascending=False).copy()
+            shortage_df["부족심도"] = shortage_df["부족심도"].round(2)
 
-            st.markdown("#### 부족심도 TOP 10")
+            display_df = shortage_df[
+                ["장비유형", "장비", "구역", "천공번호", "설계심도", "시공심도", "부족심도"]
+            ].rename(columns={
+                "장비": "장비명",
+                "설계심도": "설계심도(m)",
+                "시공심도": "시공심도(m)",
+                "부족심도": "부족심도(m)"
+            })
+
+            st.markdown("#### 설계심도 대비 부족심도 발생 공")
             st.dataframe(
-                top_shortage[["장비유형", "장비", "구역", "천공번호", "설계심도", "시공심도", "부족심도"]],
+                display_df,
                 use_container_width=True,
                 hide_index=True
             )
 
-            left, right = st.columns(2)
+            top_shortage = shortage_df.head(20).copy()
+            top_shortage["공번호표시"] = top_shortage["구역"].astype(str) + "-" + top_shortage["천공번호"].astype(str)
 
-            with left:
-                zone_shortage = (
-                    shortage_df.groupby(["대구역", "구역"], as_index=False)
-                    .agg(
-                        부족공수=("천공번호", "count"),
-                        평균부족심도=("부족심도", "mean"),
-                        최대부족심도=("부족심도", "max"),
-                        총부족심도=("부족심도", "sum")
-                    )
-                    .sort_values("총부족심도", ascending=False)
-                )
+            fig_shortage = px.bar(
+                top_shortage.sort_values("부족심도"),
+                x="부족심도",
+                y="공번호표시",
+                color="장비유형",
+                text=top_shortage.sort_values("부족심도")["부족심도"].round(2),
+                orientation="h",
+                title="부족심도 발생 공 TOP 20",
+                color_discrete_sequence=COLOR_SEQ
+            )
+            fig_shortage.update_traces(
+                texttemplate="%{text:.2f}m",
+                textposition="outside",
+                textfont_size=16
+            )
+            fig_shortage.update_layout(
+                xaxis_title="부족심도(m)",
+                yaxis_title="구역-천공번호"
+            )
+            fig_shortage = apply_chart_style(fig_shortage, height=720)
+            st.plotly_chart(fig_shortage, use_container_width=True)
 
-                fig_shortage_zone = px.bar(
-                    zone_shortage.head(15),
-                    x="구역",
-                    y="총부족심도",
-                    color="대구역",
-                    text=zone_shortage.head(15)["총부족심도"].round(2),
-                    title="구역별 총 부족심도 TOP 15",
-                    color_discrete_sequence=COLOR_SEQ
-                )
-                fig_shortage_zone.update_traces(texttemplate="%{text:.2f}m", textposition="outside", textfont_size=16)
-                fig_shortage_zone.update_layout(yaxis_title="총 부족심도(m)", xaxis_title="구역")
-                fig_shortage_zone = apply_chart_style(fig_shortage_zone, height=540)
-                st.plotly_chart(fig_shortage_zone, use_container_width=True)
-
-            with right:
-                machine_shortage = (
-                    shortage_df.groupby(["장비유형", "장비"], as_index=False)
-                    .agg(
-                        부족공수=("천공번호", "count"),
-                        평균부족심도=("부족심도", "mean"),
-                        최대부족심도=("부족심도", "max"),
-                        총부족심도=("부족심도", "sum")
-                    )
-                    .sort_values("총부족심도", ascending=False)
-                )
-
-                fig_shortage_machine = px.bar(
-                    machine_shortage,
-                    x="장비",
-                    y="총부족심도",
-                    color="장비유형",
-                    text=machine_shortage["총부족심도"].round(2),
-                    title="장비별 총 부족심도",
-                    color_discrete_sequence=COLOR_SEQ
-                )
-                fig_shortage_machine.update_traces(texttemplate="%{text:.2f}m", textposition="outside", textfont_size=16)
-                fig_shortage_machine.update_layout(yaxis_title="총 부족심도(m)", xaxis_title="장비")
-                fig_shortage_machine = apply_chart_style(fig_shortage_machine, height=540)
-                fig_shortage_machine.update_xaxes(tickangle=-30)
-                st.plotly_chart(fig_shortage_machine, use_container_width=True)
-
-            with st.expander("설계심도 대비 부족공 전체 목록 보기"):
-                st.dataframe(
-                    shortage_df[["장비유형", "장비", "대구역", "구역", "천공번호", "설계심도", "시공심도", "부족심도", "초과심도"]].sort_values("부족심도", ascending=False),
-                    use_container_width=True,
-                    hide_index=True
-                )
         else:
-            st.success("설계심도 대비 부족공이 확인되지 않았습니다.")
+            st.success("설계심도 대비 부족심도가 확인된 공이 없습니다.")
 
-    section_header("6. 동일 장비유형 인접 천공 TOP 10", "삼축은 삼축끼리, 일축은 일축끼리만 비교하며 삼축↔일축 비교는 제외합니다.", "adjacent-section")
+    section_header(
+        "6. 동일 장비유형 인접 천공 TOP 10",
+        "삼축은 삼축끼리, 일축은 일축끼리만 비교하며 삼축↔일축 비교는 제외합니다.",
+        "adjacent-section"
+    )
 
     with st.container(border=True):
         if not adjacent_df.empty:
@@ -1085,8 +1100,8 @@ with st.container(border=True):
 
         if not shortage_download.empty:
             st.download_button(
-                "설계심도 대비 부족공 CSV 다운로드",
+                "설계심도 대비 부족심도 CSV 다운로드",
                 shortage_download.to_csv(index=False).encode("utf-8-sig"),
-                file_name="설계심도_대비_부족공.csv",
+                file_name="설계심도_대비_부족심도.csv",
                 mime="text/csv"
             )
