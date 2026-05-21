@@ -28,11 +28,16 @@ html { scroll-behavior: smooth; }
 }
 
 [data-testid="stSidebar"] {
-    background: #0f172a;
+    background: linear-gradient(180deg, #f8fafc 0%, #eaf1fb 100%);
+    border-right: 1px solid #dbe3ef;
 }
 
 [data-testid="stSidebar"] * {
-    color: #f8fafc !important;
+    color: #0f172a !important;
+}
+
+[data-testid="stSidebar"] .block-container {
+    padding-top: 1rem;
 }
 
 [data-testid="stSidebar"] .block-container {
@@ -40,21 +45,21 @@ html { scroll-behavior: smooth; }
 }
 
 .logo-box {
-    padding-top: 10px;
-    padding-bottom: 10px;
-    margin-bottom: 18px;
+    background: transparent;
+    padding: 6px 0 18px 0;
+    margin-bottom: 10px;
     text-align: center;
 }
 
 .main-title {
-    font-size: clamp(28px, 2.4vw, 42px);
+    font-size: clamp(26px, 2.1vw, 34px);
     font-weight: 900;
     color: #0f172a;
-    margin-bottom: 6px;
-    line-height: 1.2;
+    margin-bottom: 8px;
+    line-height: 1.22;
     word-break: keep-all;
+    max-width: 100%;
 }
-
 .sub-title {
     color: #64748b;
     font-size: 16px;
@@ -186,19 +191,20 @@ html { scroll-behavior: smooth; }
     padding: 14px 16px;
     margin: 8px 0;
     border-radius: 14px;
-    background: rgba(255,255,255,0.05);
-    color: #f8fafc !important;
+    background: white;
+    color: #0f172a !important;
     text-decoration: none;
     font-weight: 800;
     transition: all 0.2s ease;
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid #dbe3ef;
+    box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
 }
 
 .side-nav:hover {
-    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%);
     transform: translateX(6px);
     color: white !important;
-    box-shadow: 0 8px 20px rgba(37,99,235,0.35);
+    box-shadow: 0 8px 20px rgba(37,99,235,0.25);
 }
 
 .side-section-title {
@@ -206,7 +212,7 @@ html { scroll-behavior: smooth; }
     margin-bottom: 12px;
     font-size: 15px;
     font-weight: 900;
-    color: #93c5fd !important;
+    color: #1e3a8a !important;
 }
 
 .small-chip {
