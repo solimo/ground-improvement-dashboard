@@ -591,7 +591,7 @@ with st.sidebar:
     else:
         st.caption("로고 파일 없음: cj_logo.png")
 
-    st.markdown("## 공정 분석 시스템")
+    st.markdown("## CJ제일제당 저온HUB센터 신축공사")
     st.markdown("---")
     st.markdown("### 분석 항목")
     st.markdown("""
