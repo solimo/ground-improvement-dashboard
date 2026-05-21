@@ -569,7 +569,9 @@ def parse_drilling_file(uploaded_file):
                 continue
 
             status = "이상치" if actual <= 0 or actual > 30 else "정상"
-
+            shortage = max(float(design) - float(actual), 0) if pd.notna(design) and pd.notna(actual) else 0
+            over_depth = max(float(actual) - float(design), 0) if pd.notna(design) and pd.notna(actual) else 0
+            
             records.append({
                 "장비유형": machine_type,
                 "장비": machine,
@@ -580,7 +582,9 @@ def parse_drilling_file(uploaded_file):
                 "설계심도": design,
                 "시공심도": actual,
                 "계획대비편차": excess,
-                "상태": status
+                "상태": status,
+                "부족심도": round(shortage, 2),
+                "초과심도": round(over_depth, 2)
             })
 
     return pd.DataFrame(records)
@@ -702,6 +706,7 @@ with st.sidebar:
     <a class="side-nav" href="#schedule-section">완료일 예측</a>
     <a class="side-nav" href="#daily-section">일자별 실적</a>
     <a class="side-nav" href="#drilling-section">장비 분석</a>
+    <a class="side-nav" href="#shortage-section">부족공 분석</a>
     <a class="side-nav" href="#adjacent-section">장비 편차 분석</a>
     <a class="side-nav" href="#comment-section">종합 의견</a>
     <a class="side-nav" href="#download-section">데이터 다운로드</a>
@@ -998,7 +1003,405 @@ if has_drilling:
             st.dataframe(machine_summary.round(2), use_container_width=True, hide_index=True)
 
     section_header(
-        "5. 동일 장비유형 인접 천공 TOP 10",
+    "5. 설계심도 대비 부족공 분석",
+    "설계심도 대비 실제 시공심도가 부족한 천공 위치를 분석합니다.",
+    "shortage-section"
+)
+
+with st.container(border=True):
+
+    shortage_df = normal_df[
+        (normal_df["설계심도"].notna()) &
+        (normal_df["시공심도"].notna()) &
+        (normal_df["부족심도"] > 0)
+    ].copy()
+
+    total_holes = len(normal_df)
+    shortage_count = len(shortage_df)
+
+    shortage_rate = (
+        shortage_count / total_holes * 100
+        if total_holes > 0 else 0
+    )
+
+    max_shortage = (
+        shortage_df["부족심도"].max()
+        if not shortage_df.empty else 0
+    )
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    c1.metric(
+        "전체 천공 수",
+        f"{total_holes:,}공"
+    )
+
+    c2.metric(
+        "부족공 수",
+        f"{shortage_count:,}공"
+    )
+
+    c3.metric(
+        "부족공 비율",
+        f"{shortage_rate:.1f}%"
+    )
+
+    c4.metric(
+        "최대 부족심도",
+        f"{max_shortage:.2f}m"
+    )
+
+    if not shortage_df.empty:
+
+        top_shortage = shortage_df.sort_values(
+            "부족심도",
+            ascending=False
+        ).head(10)
+
+        st.markdown("#### 부족심도 TOP 10")
+
+        st.dataframe(
+            top_shortage[
+                [
+                    "장비유형",
+                    "장비",
+                    "구역",
+                    "천공번호",
+                    "설계심도",
+                    "시공심도",
+                    "부족심도"
+                ]
+            ],
+            use_container_width=True,
+            hide_index=True
+        )
+
+        left, right = st.columns(2)
+
+        with left:
+
+            zone_shortage = (
+                shortage_df.groupby(
+                    ["대구역", "구역"],
+                    as_index=False
+                )
+                .agg(
+                    부족공수=("천공번호", "count"),
+                    총부족심도=("부족심도", "sum")
+                )
+                .sort_values(
+                    "총부족심도",
+                    ascending=False
+                )
+            )
+
+            fig_shortage_zone = px.bar(
+                zone_shortage.head(15),
+                x="구역",
+                y="총부족심도",
+                color="대구역",
+                text=zone_shortage.head(15)["총부족심도"].round(2),
+                title="구역별 총 부족심도",
+                color_discrete_sequence=COLOR_SEQ
+            )
+
+            fig_shortage_zone.update_traces(
+                texttemplate="%{text:.2f}m",
+                textposition="outside",
+                textfont_size=16
+            )
+
+            fig_shortage_zone.update_layout(
+                yaxis_title="총 부족심도(m)",
+                xaxis_title="구역"
+            )
+
+            fig_shortage_zone = apply_chart_style(
+                fig_shortage_zone,
+                height=540
+            )
+
+            st.plotly_chart(
+                fig_shortage_zone,
+                use_container_width=True
+            )
+
+        with right:
+
+            machine_shortage = (
+                shortage_df.groupby(
+                    ["장비유형", "장비"],
+                    as_index=False
+                )
+                .agg(
+                    부족공수=("천공번호", "count"),
+                    총부족심도=("부족심도", "sum")
+                )
+                .sort_values(
+                    "총부족심도",
+                    ascending=False
+                )
+            )
+
+            fig_shortage_machine = px.bar(
+                machine_shortage,
+                x="장비",
+                y="총부족심도",
+                color="장비유형",
+                text=machine_shortage["총부족심도"].round(2),
+                title="장비별 총 부족심도",
+                color_discrete_sequence=COLOR_SEQ
+            )
+
+            fig_shortage_machine.update_traces(
+                texttemplate="%{text:.2f}m",
+                textposition="outside",
+                textfont_size=16
+            )
+
+            fig_shortage_machine.update_layout(
+                yaxis_title="총 부족심도(m)",
+                xaxis_title="장비"
+            )
+
+            fig_shortage_machine = apply_chart_style(
+                fig_shortage_machine,
+                height=540
+            )
+
+            st.plotly_chart(
+                fig_shortage_machine,
+                use_container_width=True
+            )
+
+        with st.expander("설계심도 대비 부족공 전체 목록 보기"):
+
+            st.dataframe(
+                shortage_df[
+                    [
+                        "장비유형",
+                        "장비",
+                        "대구역",
+                        "구역",
+                        "천공번호",
+                        "설계심도",
+                        "시공심도",
+                        "부족심도",
+                        "초과심도"
+                    ]
+                ].sort_values(
+                    "부족심도",
+                    ascending=False
+                ),
+                use_container_width=True,
+                hide_index=True
+            )
+
+    else:
+        st.success(
+            "설계심도 대비 부족공이 확인되지 않았습니다."
+        )
+    section_header(
+    "5. 설계심도 대비 부족공 분석",
+    "설계심도 대비 실제 시공심도가 부족한 천공 위치를 분석합니다.",
+    "shortage-section"
+)
+
+with st.container(border=True):
+
+    shortage_df = normal_df[
+        (normal_df["설계심도"].notna()) &
+        (normal_df["시공심도"].notna()) &
+        (normal_df["부족심도"] > 0)
+    ].copy()
+
+    total_holes = len(normal_df)
+    shortage_count = len(shortage_df)
+
+    shortage_rate = (
+        shortage_count / total_holes * 100
+        if total_holes > 0 else 0
+    )
+
+    max_shortage = (
+        shortage_df["부족심도"].max()
+        if not shortage_df.empty else 0
+    )
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    c1.metric(
+        "전체 천공 수",
+        f"{total_holes:,}공"
+    )
+
+    c2.metric(
+        "부족공 수",
+        f"{shortage_count:,}공"
+    )
+
+    c3.metric(
+        "부족공 비율",
+        f"{shortage_rate:.1f}%"
+    )
+
+    c4.metric(
+        "최대 부족심도",
+        f"{max_shortage:.2f}m"
+    )
+
+    if not shortage_df.empty:
+
+        top_shortage = shortage_df.sort_values(
+            "부족심도",
+            ascending=False
+        ).head(10)
+
+        st.markdown("#### 부족심도 TOP 10")
+
+        st.dataframe(
+            top_shortage[
+                [
+                    "장비유형",
+                    "장비",
+                    "구역",
+                    "천공번호",
+                    "설계심도",
+                    "시공심도",
+                    "부족심도"
+                ]
+            ],
+            use_container_width=True,
+            hide_index=True
+        )
+
+        left, right = st.columns(2)
+
+        with left:
+
+            zone_shortage = (
+                shortage_df.groupby(
+                    ["대구역", "구역"],
+                    as_index=False
+                )
+                .agg(
+                    부족공수=("천공번호", "count"),
+                    총부족심도=("부족심도", "sum")
+                )
+                .sort_values(
+                    "총부족심도",
+                    ascending=False
+                )
+            )
+
+            fig_shortage_zone = px.bar(
+                zone_shortage.head(15),
+                x="구역",
+                y="총부족심도",
+                color="대구역",
+                text=zone_shortage.head(15)["총부족심도"].round(2),
+                title="구역별 총 부족심도",
+                color_discrete_sequence=COLOR_SEQ
+            )
+
+            fig_shortage_zone.update_traces(
+                texttemplate="%{text:.2f}m",
+                textposition="outside",
+                textfont_size=16
+            )
+
+            fig_shortage_zone.update_layout(
+                yaxis_title="총 부족심도(m)",
+                xaxis_title="구역"
+            )
+
+            fig_shortage_zone = apply_chart_style(
+                fig_shortage_zone,
+                height=540
+            )
+
+            st.plotly_chart(
+                fig_shortage_zone,
+                use_container_width=True
+            )
+
+        with right:
+
+            machine_shortage = (
+                shortage_df.groupby(
+                    ["장비유형", "장비"],
+                    as_index=False
+                )
+                .agg(
+                    부족공수=("천공번호", "count"),
+                    총부족심도=("부족심도", "sum")
+                )
+                .sort_values(
+                    "총부족심도",
+                    ascending=False
+                )
+            )
+
+            fig_shortage_machine = px.bar(
+                machine_shortage,
+                x="장비",
+                y="총부족심도",
+                color="장비유형",
+                text=machine_shortage["총부족심도"].round(2),
+                title="장비별 총 부족심도",
+                color_discrete_sequence=COLOR_SEQ
+            )
+
+            fig_shortage_machine.update_traces(
+                texttemplate="%{text:.2f}m",
+                textposition="outside",
+                textfont_size=16
+            )
+
+            fig_shortage_machine.update_layout(
+                yaxis_title="총 부족심도(m)",
+                xaxis_title="장비"
+            )
+
+            fig_shortage_machine = apply_chart_style(
+                fig_shortage_machine,
+                height=540
+            )
+
+            st.plotly_chart(
+                fig_shortage_machine,
+                use_container_width=True
+            )
+
+        with st.expander("설계심도 대비 부족공 전체 목록 보기"):
+
+            st.dataframe(
+                shortage_df[
+                    [
+                        "장비유형",
+                        "장비",
+                        "대구역",
+                        "구역",
+                        "천공번호",
+                        "설계심도",
+                        "시공심도",
+                        "부족심도",
+                        "초과심도"
+                    ]
+                ].sort_values(
+                    "부족심도",
+                    ascending=False
+                ),
+                use_container_width=True,
+                hide_index=True
+            )
+
+    else:
+        st.success(
+            "설계심도 대비 부족공이 확인되지 않았습니다."
+        )
+    section_header(
+        "6. 동일 장비유형 인접 천공 TOP 10",
         "삼축은 삼축끼리, 일축은 일축끼리만 비교하며 삼축↔일축 비교는 제외합니다.",
         "adjacent-section"
     )
@@ -1080,11 +1483,11 @@ if has_drilling:
 else:
     st.info("CCM 천공일지가 업로드되지 않았거나 인식되지 않아 장비 간 편차 분석은 표시하지 않습니다.")
 
-section_header("6. AI 종합 분석 의견", "업로드된 데이터 기준으로 공정 현황과 천공 편차를 종합 요약합니다.", "comment-section")
+section_header("7. AI 종합 분석 의견", "업로드된 데이터 기준으로 공정 현황과 천공 편차를 종합 요약합니다.", "comment-section")
 with st.container(border=True):
     st.write(create_ai_comment(summary_df, daily_df, drill_df, adjacent_df))
 
-section_header("7. 데이터 다운로드", "분석 결과를 CSV 파일로 저장하여 후속 보고서 작성에 활용할 수 있습니다.", "download-section")
+section_header("8. 데이터 다운로드", "분석 결과를 CSV 파일로 저장하여 후속 보고서 작성에 활용할 수 있습니다.", "download-section")
 with st.container(border=True):
     if has_status and not summary_df.empty:
         st.download_button(
