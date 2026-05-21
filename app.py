@@ -131,29 +131,38 @@ html { scroll-behavior: smooth; }
 }
 
 .metric-card {
-    background: white;
-    padding: 20px;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
+    background: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%);
+    padding: 24px;
+    border-radius: 24px;
+    border: 1px solid #dbeafe;
     text-align: center;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
-    min-height: 112px;
+    box-shadow:
+        0 10px 30px rgba(37, 99, 235, 0.08),
+        0 2px 8px rgba(15, 23, 42, 0.04);
+    min-height: 140px;
+    transition: all 0.25s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+        0 16px 40px rgba(37, 99, 235, 0.14),
+        0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
 .metric-title {
     font-size: 14px;
     color: #64748b;
-    margin-bottom: 8px;
-    white-space: normal;
+    margin-bottom: 14px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
 }
 
 .metric-value {
-    font-size: 26px;
+    font-size: 38px;
     font-weight: 900;
     color: #0f172a;
-    line-height: 1.2;
-    word-break: keep-all;
-    white-space: normal;
+    line-height: 1.1;
 }
 
 .status-good {
@@ -232,27 +241,38 @@ html { scroll-behavior: smooth; }
 }
 
 .section-title {
-    font-size: 24px;
+    font-size: 32px;
     font-weight: 900;
     color: #0f172a;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    letter-spacing: -1px;
 }
 
 .section-desc {
     color: #64748b;
-    font-size: 14px;
-    line-height: 1.6;
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 22px;
+}
+[data-testid="stPlotlyChart"] {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%);
+    border-radius: 28px;
+    padding: 20px;
+    border: 1px solid #dbeafe;
+    box-shadow:
+        0 12px 34px rgba(37, 99, 235, 0.08),
+        0 3px 10px rgba(15, 23, 42, 0.04);
+
+    overflow: hidden;
     margin-bottom: 16px;
 }
 
-[data-testid="stPlotlyChart"] {
-    background: white;
-    border-radius: 22px;
-    padding: 16px;
-    border: 1px solid #dbe3ef;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+[data-testid="stDataFrame"] {
+    border-radius: 20px;
     overflow: hidden;
-    margin-bottom: 12px;
+    border: 1px solid #dbeafe;
+    box-shadow:
+        0 8px 24px rgba(15, 23, 42, 0.05);
 }
 
 .js-plotly-plot .plotly,
@@ -291,17 +311,65 @@ def section_header(title, desc=None, anchor=None):
         st.markdown(f'<div class="section-desc">{desc}</div>', unsafe_allow_html=True)
 
 
-def apply_chart_style(fig, height=410):
+def apply_chart_style(fig, height=430):
+
     fig.update_layout(
         height=height,
-        paper_bgcolor="white",
-        plot_bgcolor="#f8fafc",
-        font=dict(size=13, color="#334155"),
-        margin=dict(l=30, r=30, t=60, b=40),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        xaxis=dict(showgrid=False, zeroline=False, linecolor="#cbd5e1"),
-        yaxis=dict(gridcolor="#e2e8f0", zeroline=False, linecolor="#cbd5e1")
+
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="#f8fbff",
+
+        font=dict(
+            family="Pretendard, sans-serif",
+            size=13,
+            color="#334155"
+        ),
+
+        title=dict(
+            font=dict(size=20, color="#0f172a"),
+            x=0.02,
+            xanchor="left"
+        ),
+
+        margin=dict(
+            l=30,
+            r=30,
+            t=70,
+            b=40
+        ),
+
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+            bgcolor="rgba(255,255,255,0)"
+        ),
+
+        xaxis=dict(
+            showgrid=False,
+            linecolor="#cbd5e1",
+            tickfont=dict(size=12)
+        ),
+
+        yaxis=dict(
+            gridcolor="#e2e8f0",
+            zeroline=False,
+            linecolor="#cbd5e1",
+            tickfont=dict(size=12)
+        )
     )
+
+    fig.update_traces(
+        marker_line_width=0,
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=13,
+            font_family="Pretendard"
+        )
+    )
+
     return fig
 
 
@@ -744,6 +812,7 @@ if has_status:
                 color="구분",
                 text=chart_df["진행률"].round(1),
                 title="공종별 진행률"
+                color_discrete_sequence=["#2563eb","#38bdf8","#0ea5e9","#1d4ed8"]
             )
             fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
             fig.update_layout(yaxis_title="진행률(%)", xaxis_title="공종")
