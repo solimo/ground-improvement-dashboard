@@ -597,10 +597,10 @@ with st.sidebar:
     st.markdown("""
     <a class="side-nav" href="#upload-section">파일 업로드</a>
     <a class="side-nav" href="#status-summary">공정 현황 요약</a>
-    <a class="side-nav" href="#progress-section">공종별 진행률</a>
+    <a class="side-nav" href="#progress-section">공정별 진행률</a>
     <a class="side-nav" href="#schedule-section">완료일 예측</a>
     <a class="side-nav" href="#daily-section">일자별 실적</a>
-    <a class="side-nav" href="#drilling-section">천공 장비 분석</a>
+    <a class="side-nav" href="#drilling-section">장비 분석</a>
     <a class="side-nav" href="#adjacent-section">장비 편차 분석</a>
     <a class="side-nav" href="#comment-section">종합 의견</a>
     <a class="side-nav" href="#download-section">데이터 다운로드</a>
