@@ -387,8 +387,6 @@ st.markdown("""
 <div class="hero-card">
     <div class="hero-title">공정 데이터를 업로드하세요</div>
     <div class="hero-desc">
-        현황표와 천공일지를 함께 업로드하면 공정 진행률, 잔여 물량, 예상 완료일,
-        장비별 시공심도, 동일 장비유형 내 인접 천공 편차를 한 번에 분석합니다.
     </div>
 </div>
 """, unsafe_allow_html=True)
