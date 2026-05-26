@@ -6,11 +6,7 @@ import re
 from datetime import timedelta
 from pathlib import Path
 
-st.set_page_config(
-    page_title="AI 기반 공정 분석 시스템",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="AI 기반 공정 분석 시스템", layout="wide", initial_sidebar_state="expanded")
 
 LOGO_PATH = "cj_logo.png"
 COLOR_SEQ = ["#005BAC", "#00AEEF", "#F58220", "#ED1C24", "#4F46E5", "#10B981"]
@@ -18,265 +14,41 @@ COLOR_SEQ = ["#005BAC", "#00AEEF", "#F58220", "#ED1C24", "#4F46E5", "#10B981"]
 st.markdown("""
 <style>
 html { scroll-behavior: smooth; }
-
-.stApp {
-    background: linear-gradient(180deg, #F8FBFF 0%, #EEF4FA 100%);
-}
-
-.block-container {
-    padding-top: 2rem;
-    padding-bottom: 3.2rem;
-    max-width: 1500px;
-}
-
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #f8fafc 0%, #eaf1fb 100%);
-    border-right: 1px solid #dbe3ef;
-}
-
-[data-testid="stSidebar"] * {
-    color: #0f172a !important;
-}
-
-[data-testid="stSidebar"] .block-container {
-    padding-top: 1rem;
-}
-
-.logo-box {
-    background: transparent;
-    padding: 6px 0 18px 0;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-.side-nav {
-    display: block;
-    padding: 14px 16px;
-    margin: 8px 0;
-    border-radius: 14px;
-    background: white;
-    color: #0f172a !important;
-    text-decoration: none;
-    font-weight: 800;
-    transition: all 0.2s ease;
-    border: 1px solid #dbe3ef;
-    box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
-}
-
-.side-nav:hover {
-    background: linear-gradient(135deg, #005BAC 0%, #00AEEF 100%);
-    transform: translateX(6px);
-    color: white !important;
-    box-shadow: 0 8px 20px rgba(0,91,172,0.22);
-}
-
-.main-title {
-    font-size: clamp(34px, 3.1vw, 52px);
-    font-weight: 950;
-    color: #071B3A;
-    line-height: 1.08;
-    letter-spacing: -1.4px;
-    margin: 8px 0 10px 0;
-    word-break: keep-all;
-}
-
-.sub-title {
-    color: #52657A;
-    font-size: 18px;
-    font-weight: 500;
-    margin-bottom: 28px;
-    line-height: 1.6;
-}
-
-.hero-card {
-    background: linear-gradient(135deg, #071B3A 0%, #005BAC 52%, #00AEEF 100%);
-    padding: 38px 42px;
-    border-radius: 28px;
-    margin-bottom: 26px;
-    box-shadow: 0 22px 50px rgba(0,91,172,0.22);
-}
-
-.hero-title {
-    font-size: 34px;
-    font-weight: 950;
-    color: white;
-    margin-bottom: 12px;
-    letter-spacing: -0.8px;
-}
-
-.hero-desc {
-    color: #EAF7FF;
-    font-size: 17px;
-    line-height: 1.8;
-    max-width: 920px;
-}
-
-.upload-panel {
-    background: rgba(255,255,255,0.92);
-    padding: 30px;
-    border-radius: 26px;
-    border: 1px solid #CFE0F3;
-    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.07);
-    margin-bottom: 26px;
-}
-
-.upload-title {
-    font-size: 26px;
-    font-weight: 950;
-    color: #071B3A;
-    margin-bottom: 8px;
-}
-
-.upload-desc {
-    color: #52657A;
-    font-size: 16px;
-    line-height: 1.75;
-    margin-bottom: 18px;
-}
-
-.small-chip {
-    display: inline-block;
-    padding: 8px 13px;
-    border-radius: 999px;
-    background: #EAF4FF;
-    color: #005BAC;
-    font-weight: 900;
-    font-size: 13px;
-    margin-right: 8px;
-    margin-bottom: 8px;
-    border: 1px solid #CFE5FF;
-}
-
-[data-testid="stFileUploader"] {
-    background: #F8FBFF;
-    border: 2px dashed #7CBCEB;
-    border-radius: 24px;
-    padding: 28px;
-}
-
-[data-testid="stFileUploaderDropzone"] {
-    background: white;
-    border: 2px dashed #A6D7FA;
-    border-radius: 20px;
-    min-height: 142px;
-    padding: 28px;
-}
-
-[data-testid="stFileUploaderDropzone"]:hover {
-    border-color: #005BAC;
-    background: #EDF7FF;
-}
-
-.anchor-offset {
-    scroll-margin-top: 100px;
-}
-
-.section-title {
-    font-size: 30px;
-    font-weight: 950;
-    color: #071B3A;
-    margin: 32px 0 6px 0;
-    letter-spacing: -0.8px;
-}
-
-.section-title:before {
-    content: "";
-    display: inline-block;
-    width: 9px;
-    height: 24px;
-    border-radius: 6px;
-    background: linear-gradient(180deg, #005BAC, #00AEEF);
-    margin-right: 11px;
-    vertical-align: -3px;
-}
-
-.section-desc {
-    color: #52657A;
-    font-size: 16px;
-    line-height: 1.65;
-    margin-bottom: 16px;
-}
-
-.metric-card {
-    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,251,255,0.98));
-    padding: 24px 18px;
-    border-radius: 26px;
-    border: 1px solid #D5E5F6;
-    text-align: center;
-    box-shadow: 0 14px 36px rgba(0,91,172,0.08), 0 4px 10px rgba(15,23,42,0.04);
-    min-height: 138px;
-}
-
-.metric-title {
-    font-size: 15px;
-    color: #52657A;
-    margin-bottom: 14px;
-    font-weight: 900;
-}
-
-.metric-value {
-    font-size: clamp(27px, 2.2vw, 40px);
-    font-weight: 950;
-    color: #071B3A;
-    line-height: 1.1;
-    letter-spacing: -0.8px;
-    word-break: keep-all;
-}
-
-[data-testid="stVerticalBlockBorderWrapper"] {
-    border-radius: 26px !important;
-    border-color: #D4E2F0 !important;
-    background: rgba(255,255,255,0.72);
-    box-shadow: 0 12px 34px rgba(15,23,42,0.045);
-}
-
-[data-testid="stPlotlyChart"] {
-    background: white;
-    border-radius: 24px;
-    padding: 10px;
-    border: 1px solid #D4E2F0;
-    box-shadow: 0 10px 26px rgba(0,91,172,0.07);
-    overflow: hidden;
-    margin: 8px 0 18px 0;
-}
-
-[data-testid="stDataFrame"] {
-    border-radius: 18px;
-    overflow: hidden;
-    border: 1px solid #D4E2F0;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.045);
-}
-
-.status-good, .status-watch, .status-risk {
-    padding: 17px 20px;
-    border-radius: 18px;
-    font-weight: 900;
-    margin: 18px 0 18px 0;
-}
-
-.status-good {
-    background: #E8F8EF;
-    color: #06613C;
-    border: 1px solid #B9EBCF;
-}
-
-.status-watch {
-    background: #FFF7E6;
-    color: #8A5200;
-    border: 1px solid #F5D38B;
-}
-
-.status-risk {
-    background: #FFF0F0;
-    color: #B00020;
-    border: 1px solid #F2B8B8;
-}
-
-.stDownloadButton button, .stButton button {
-    border-radius: 15px !important;
-    font-weight: 900 !important;
-    padding: 0.75rem 1rem !important;
-}
+.stApp { background: linear-gradient(180deg, #F8FBFF 0%, #EEF4FA 100%); }
+.block-container { padding-top: 2rem; padding-bottom: 3.2rem; max-width: 1500px; }
+[data-testid="stSidebar"] { background: linear-gradient(180deg, #f8fafc 0%, #eaf1fb 100%); border-right: 1px solid #dbe3ef; }
+[data-testid="stSidebar"] * { color: #0f172a !important; }
+[data-testid="stSidebar"] .block-container { padding-top: 1rem; }
+.logo-box { background: transparent; padding: 6px 0 18px 0; margin-bottom: 10px; text-align: center; }
+.side-nav { display: block; padding: 14px 16px; margin: 8px 0; border-radius: 14px; background: white; color: #0f172a !important; text-decoration: none; font-weight: 800; transition: all 0.2s ease; border: 1px solid #dbe3ef; box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05); }
+.side-nav:hover { background: linear-gradient(135deg, #005BAC 0%, #00AEEF 100%); transform: translateX(6px); color: white !important; box-shadow: 0 8px 20px rgba(0,91,172,0.22); }
+.main-title { font-size: clamp(34px, 3.1vw, 52px); font-weight: 950; color: #071B3A; line-height: 1.08; letter-spacing: -1.4px; margin: 8px 0 10px 0; word-break: keep-all; }
+.sub-title { color: #52657A; font-size: 18px; font-weight: 500; margin-bottom: 28px; line-height: 1.6; }
+.hero-card { background: linear-gradient(135deg, #071B3A 0%, #005BAC 52%, #00AEEF 100%); padding: 38px 42px; border-radius: 28px; margin-bottom: 26px; box-shadow: 0 22px 50px rgba(0,91,172,0.22); }
+.hero-title { font-size: 34px; font-weight: 950; color: white; margin-bottom: 12px; letter-spacing: -0.8px; }
+.hero-desc { color: #EAF7FF; font-size: 17px; line-height: 1.8; max-width: 920px; }
+.upload-panel { background: rgba(255,255,255,0.92); padding: 30px; border-radius: 26px; border: 1px solid #CFE0F3; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.07); margin-bottom: 26px; }
+.upload-title { font-size: 26px; font-weight: 950; color: #071B3A; margin-bottom: 8px; }
+.upload-desc { color: #52657A; font-size: 16px; line-height: 1.75; margin-bottom: 18px; }
+.small-chip { display: inline-block; padding: 8px 13px; border-radius: 999px; background: #EAF4FF; color: #005BAC; font-weight: 900; font-size: 13px; margin-right: 8px; margin-bottom: 8px; border: 1px solid #CFE5FF; }
+[data-testid="stFileUploader"] { background: #F8FBFF; border: 2px dashed #7CBCEB; border-radius: 24px; padding: 28px; }
+[data-testid="stFileUploaderDropzone"] { background: white; border: 2px dashed #A6D7FA; border-radius: 20px; min-height: 142px; padding: 28px; }
+[data-testid="stFileUploaderDropzone"]:hover { border-color: #005BAC; background: #EDF7FF; }
+.anchor-offset { scroll-margin-top: 100px; }
+.section-title { font-size: 30px; font-weight: 950; color: #071B3A; margin: 32px 0 6px 0; letter-spacing: -0.8px; }
+.section-title:before { content: ""; display: inline-block; width: 9px; height: 24px; border-radius: 6px; background: linear-gradient(180deg, #005BAC, #00AEEF); margin-right: 11px; vertical-align: -3px; }
+.section-desc { color: #52657A; font-size: 16px; line-height: 1.65; margin-bottom: 16px; }
+.metric-card { background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,251,255,0.98)); padding: 24px 18px; border-radius: 26px; border: 1px solid #D5E5F6; text-align: center; box-shadow: 0 14px 36px rgba(0,91,172,0.08), 0 4px 10px rgba(15,23,42,0.04); min-height: 138px; }
+.metric-title { font-size: 15px; color: #52657A; margin-bottom: 14px; font-weight: 900; }
+.metric-value { font-size: clamp(27px, 2.2vw, 40px); font-weight: 950; color: #071B3A; line-height: 1.1; letter-spacing: -0.8px; word-break: keep-all; }
+[data-testid="stVerticalBlockBorderWrapper"] { border-radius: 26px !important; border-color: #D4E2F0 !important; background: rgba(255,255,255,0.72); box-shadow: 0 12px 34px rgba(15,23,42,0.045); }
+[data-testid="stPlotlyChart"] { background: white; border-radius: 24px; padding: 10px; border: 1px solid #D4E2F0; box-shadow: 0 10px 26px rgba(0,91,172,0.07); overflow: hidden; margin: 8px 0 18px 0; }
+[data-testid="stDataFrame"] { border-radius: 18px; overflow: hidden; border: 1px solid #D4E2F0; box-shadow: 0 8px 22px rgba(15, 23, 42, 0.045); }
+.status-good, .status-watch, .status-risk { padding: 17px 20px; border-radius: 18px; font-weight: 900; margin: 18px 0 18px 0; }
+.status-good { background: #E8F8EF; color: #06613C; border: 1px solid #B9EBCF; }
+.status-watch { background: #FFF7E6; color: #8A5200; border: 1px solid #F5D38B; }
+.status-risk { background: #FFF0F0; color: #B00020; border: 1px solid #F2B8B8; }
+.stDownloadButton button, .stButton button { border-radius: 15px !important; font-weight: 900 !important; padding: 0.75rem 1rem !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -297,42 +69,15 @@ def apply_chart_style(fig, height=540, legend=True):
         font=dict(family="Arial, sans-serif", size=18, color="#0F172A"),
         title=dict(font=dict(size=25, color="#071B3A"), x=0.02, xanchor="left", y=0.96),
         margin=dict(l=82, r=44, t=94, b=92),
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.04,
-            xanchor="right",
-            x=1,
-            bgcolor="rgba(255,255,255,0)",
-            font=dict(size=16)
-        ),
-        xaxis=dict(
-            title_font=dict(size=18, color="#334155"),
-            tickfont=dict(size=15, color="#475569"),
-            showgrid=False,
-            zeroline=False,
-            linecolor="#AFC3D8",
-            automargin=True
-        ),
-        yaxis=dict(
-            title_font=dict(size=18, color="#334155"),
-            tickfont=dict(size=15, color="#475569"),
-            gridcolor="#E5EEF8",
-            zeroline=False,
-            linecolor="#AFC3D8",
-            automargin=True
-        )
+        legend=dict(orientation="h", yanchor="bottom", y=1.04, xanchor="right", x=1, bgcolor="rgba(255,255,255,0)", font=dict(size=16)),
+        xaxis=dict(title_font=dict(size=18, color="#334155"), tickfont=dict(size=15, color="#475569"), showgrid=False, zeroline=False, linecolor="#AFC3D8", automargin=True),
+        yaxis=dict(title_font=dict(size=18, color="#334155"), tickfont=dict(size=15, color="#475569"), gridcolor="#E5EEF8", zeroline=False, linecolor="#AFC3D8", automargin=True)
     )
 
     if not legend:
         fig.update_layout(showlegend=False)
 
-    fig.update_traces(
-        marker_line_width=0,
-        textfont=dict(size=17, color="#071B3A"),
-        hoverlabel=dict(bgcolor="white", font_size=16, font_family="Arial")
-    )
-
+    fig.update_traces(marker_line_width=0, textfont=dict(size=17, color="#071B3A"), hoverlabel=dict(bgcolor="white", font_size=16, font_family="Arial"))
     return fig
 
 
@@ -502,8 +247,6 @@ def parse_drilling_file(uploaded_file):
                 continue
 
             status = "이상치" if actual <= 0 or actual > 30 else "정상"
-            shortage = max(float(design) - float(actual), 0) if pd.notna(design) and pd.notna(actual) else 0
-            over_depth = max(float(actual) - float(design), 0) if pd.notna(design) and pd.notna(actual) else 0
 
             records.append({
                 "장비유형": machine_type,
@@ -515,9 +258,7 @@ def parse_drilling_file(uploaded_file):
                 "설계심도": design,
                 "시공심도": actual,
                 "계획대비편차": excess,
-                "상태": status,
-                "부족심도": round(shortage, 2),
-                "초과심도": round(over_depth, 2)
+                "상태": status
             })
 
     return pd.DataFrame(records)
@@ -527,10 +268,7 @@ def make_adjacent_comparison(drill_df):
     if drill_df.empty:
         return pd.DataFrame()
 
-    valid = drill_df[
-        (drill_df["상태"] == "정상") &
-        (drill_df["장비유형"].isin(["삼축", "일축"]))
-    ].copy()
+    valid = drill_df[(drill_df["상태"] == "정상") & (drill_df["장비유형"].isin(["삼축", "일축"]))].copy()
 
     agg = (
         valid.groupby(["장비유형", "구역", "대구역", "천공번호", "장비"], as_index=False)
@@ -607,14 +345,6 @@ def create_ai_comment(summary, daily, drill_df, adjacent_df):
             f"최근 7개 작업일 기준 중층 평균 생산량은 약 {middle_avg:.1f}공/일, 표층 평균 생산량은 약 {surface_avg:.1f}㎡/일입니다."
         )
 
-    if not drill_df.empty and "부족심도" in drill_df.columns:
-        shortage_df = drill_df[(drill_df["상태"] == "정상") & (drill_df["부족심도"] > 0)]
-        if not shortage_df.empty:
-            top = shortage_df.sort_values("부족심도", ascending=False).iloc[0]
-            comments.append(
-                f"설계심도 대비 부족심도는 {top['구역']} {int(top['천공번호'])}번공에서 최대 {top['부족심도']:.2f}m로 확인됩니다."
-            )
-
     if not adjacent_df.empty:
         top = adjacent_df.iloc[0]
         comments.append(
@@ -645,24 +375,20 @@ with st.sidebar:
     <a class="side-nav" href="#schedule-section">완료일 예측</a>
     <a class="side-nav" href="#daily-section">일자별 실적</a>
     <a class="side-nav" href="#drilling-section">장비 분석</a>
-    <a class="side-nav" href="#shortage-section">부족심도 분석</a>
     <a class="side-nav" href="#adjacent-section">장비 편차 분석</a>
     <a class="side-nav" href="#comment-section">종합 의견</a>
     <a class="side-nav" href="#download-section">데이터 다운로드</a>
     """, unsafe_allow_html=True)
 
 st.markdown('<div class="main-title">AI 기반 공정 분석 시스템</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="sub-title">입력한 데이터를 바탕으로 공정 현황, 생산성, 완료일을 자동 분석합니다.</div>',
-    unsafe_allow_html=True
-)
+st.markdown('<div class="sub-title">입력한 데이터를 바탕으로 공정 현황, 생산성, 완료일을 자동 분석합니다.</div>', unsafe_allow_html=True)
 
 st.markdown("""
 <div class="hero-card">
     <div class="hero-title">공정 데이터를 업로드하세요</div>
     <div class="hero-desc">
         현황표와 천공일지를 함께 업로드하면 공정 진행률, 잔여 물량, 예상 완료일,
-        장비별 시공심도, 설계심도 대비 부족심도, 동일 장비유형 내 인접 천공 편차를 한 번에 분석합니다.
+        장비별 시공심도, 동일 장비유형 내 인접 천공 편차를 한 번에 분석합니다.
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -676,7 +402,6 @@ st.markdown("""
     </div>
     <span class="small-chip">현황표 XLSX</span>
     <span class="small-chip">천공일지 XLSX</span>
-    <span class="small-chip">부족심도 분석</span>
     <span class="small-chip">드래그앤드롭</span>
 </div>
 """, unsafe_allow_html=True)
@@ -736,11 +461,7 @@ has_drilling = not drill_df.empty
 st.success("분석 결과가 생성되었습니다.")
 
 if has_status:
-    section_header(
-        "공정 현황 요약",
-        "지반개량공사 현황표 기준으로 전체 진행률, 잔여 물량, 최근 생산성, 예상 완료일을 요약합니다.",
-        "status-summary"
-    )
+    section_header("공정 현황 요약", "지반개량공사 현황표 기준으로 전체 진행률, 잔여 물량, 최근 생산성, 예상 완료일을 요약합니다.", "status-summary")
 
     with st.container(border=True):
         total_design = summary_df["설계수량"].sum() if not summary_df.empty else 0
@@ -786,26 +507,14 @@ if has_status:
             chart_df = summary_df.copy()
             chart_df["공종"] = chart_df["구분"].astype(str) + " " + chart_df["규격"].astype(str)
 
-            fig = px.bar(
-                chart_df,
-                x="공종",
-                y="진행률",
-                color="구분",
-                text=chart_df["진행률"].round(1),
-                title="공종별 진행률",
-                color_discrete_sequence=COLOR_SEQ
-            )
+            fig = px.bar(chart_df, x="공종", y="진행률", color="구분", text=chart_df["진행률"].round(1), title="공종별 진행률", color_discrete_sequence=COLOR_SEQ)
             fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside", textfont_size=18)
             fig.update_layout(yaxis_title="진행률(%)", xaxis_title="공종")
             fig = apply_chart_style(fig, height=560)
             st.plotly_chart(fig, use_container_width=True)
 
             with st.expander("공정 현황 상세표 보기"):
-                st.dataframe(
-                    summary_df[["구분", "규격", "단위", "설계수량", "전일", "누계", "잔여량", "진행률"]],
-                    use_container_width=True,
-                    hide_index=True
-                )
+                st.dataframe(summary_df[["구분", "규격", "단위", "설계수량", "전일", "누계", "잔여량", "진행률"]], use_container_width=True, hide_index=True)
 
     section_header("2. 완료일 예측", "최근 작업 실적을 기준으로 표층 잔여 물량의 예상 완료일을 산정합니다.", "schedule-section")
     with st.container(border=True):
@@ -818,7 +527,6 @@ if has_status:
 
     if not daily_df.empty:
         section_header("3. 일자별 작업 실적 추이", "중층과 표층은 단위가 다르므로 그래프를 분리하여 표시합니다.", "daily-section")
-
         left, right = st.columns(2)
 
         with left:
@@ -826,14 +534,7 @@ if has_status:
                 st.markdown("#### 중층 작업 실적")
                 middle_df = daily_df[["날짜", "CCM-T", "CCM"]].copy()
                 middle_df["중층 합계"] = middle_df["CCM-T"] + middle_df["CCM"]
-                fig_middle = px.line(
-                    middle_df,
-                    x="날짜",
-                    y=["CCM-T", "CCM", "중층 합계"],
-                    markers=True,
-                    title="중층 작업 실적 추이",
-                    color_discrete_sequence=COLOR_SEQ
-                )
+                fig_middle = px.line(middle_df, x="날짜", y=["CCM-T", "CCM", "중층 합계"], markers=True, title="중층 작업 실적 추이", color_discrete_sequence=COLOR_SEQ)
                 fig_middle.update_traces(line=dict(width=4), marker=dict(size=8))
                 fig_middle.update_layout(yaxis_title="중층 실적(공)", xaxis_title="날짜")
                 fig_middle = apply_chart_style(fig_middle, height=540)
@@ -843,14 +544,7 @@ if has_status:
             with st.container(border=True):
                 st.markdown("#### 표층 작업 실적")
                 surface_df = daily_df[["날짜", "표층"]].copy()
-                fig_surface = px.bar(
-                    surface_df,
-                    x="날짜",
-                    y="표층",
-                    text="표층",
-                    title="표층 작업 실적 추이",
-                    color_discrete_sequence=["#005BAC"]
-                )
+                fig_surface = px.bar(surface_df, x="날짜", y="표층", text="표층", title="표층 작업 실적 추이", color_discrete_sequence=["#005BAC"])
                 fig_surface.update_traces(texttemplate="%{text:.0f}", textposition="outside", textfont_size=16)
                 fig_surface.update_layout(yaxis_title="표층 실적(㎡)", xaxis_title="날짜")
                 fig_surface = apply_chart_style(fig_surface, height=540, legend=False)
@@ -862,11 +556,7 @@ else:
     st.info("지반개량공사 현황표가 업로드되지 않았거나 인식되지 않아 공정률 관련 분석은 표시하지 않습니다.")
 
 if has_drilling:
-    section_header(
-        "4. CCM 천공일지 장비별 분석",
-        "천공일지 기준 장비별 시공심도, 이상치, 구역별 천공 데이터를 분석합니다.",
-        "drilling-section"
-    )
+    section_header("4. CCM 천공일지 장비별 분석", "천공일지 기준 장비별 시공심도, 이상치, 구역별 천공 데이터를 분석합니다.", "drilling-section")
 
     with st.container(border=True):
         normal_df = drill_df[drill_df["상태"] == "정상"]
@@ -891,15 +581,7 @@ if has_drilling:
         left, right = st.columns(2)
 
         with left:
-            fig3 = px.bar(
-                machine_summary,
-                x="장비",
-                y="평균시공심도",
-                color="장비유형",
-                text=machine_summary["평균시공심도"].round(2),
-                title="장비별 평균 시공심도",
-                color_discrete_sequence=COLOR_SEQ
-            )
+            fig3 = px.bar(machine_summary, x="장비", y="평균시공심도", color="장비유형", text=machine_summary["평균시공심도"].round(2), title="장비별 평균 시공심도", color_discrete_sequence=COLOR_SEQ)
             fig3.update_traces(textposition="inside", textfont_size=17, textfont_color="white")
             fig3.update_layout(yaxis_title="평균 시공심도(m)", xaxis_title="장비")
             fig3 = apply_chart_style(fig3, height=540)
@@ -907,19 +589,8 @@ if has_drilling:
             st.plotly_chart(fig3, use_container_width=True)
 
         with right:
-            zone_count = normal_df.groupby(["장비유형", "대구역"], as_index=False).agg(
-                천공수=("천공번호", "count"),
-                평균시공심도=("시공심도", "mean")
-            )
-            fig4 = px.bar(
-                zone_count,
-                x="대구역",
-                y="천공수",
-                color="장비유형",
-                text="천공수",
-                title="구역별 천공 데이터 수",
-                color_discrete_sequence=COLOR_SEQ
-            )
+            zone_count = normal_df.groupby(["장비유형", "대구역"], as_index=False).agg(천공수=("천공번호", "count"), 평균시공심도=("시공심도", "mean"))
+            fig4 = px.bar(zone_count, x="대구역", y="천공수", color="장비유형", text="천공수", title="구역별 천공 데이터 수", color_discrete_sequence=COLOR_SEQ)
             fig4.update_traces(textposition="inside", textfont_size=17, textfont_color="white")
             fig4.update_layout(yaxis_title="천공 데이터 수", xaxis_title="구역")
             fig4 = apply_chart_style(fig4, height=540)
@@ -928,72 +599,7 @@ if has_drilling:
         with st.expander("천공 장비별 상세표 보기"):
             st.dataframe(machine_summary.round(2), use_container_width=True, hide_index=True)
 
-    section_header(
-        "5. 설계심도 대비 부족심도 분석",
-        "설계심도보다 실제 시공심도가 부족한 공을 위치별로 표시합니다.",
-        "shortage-section"
-    )
-
-    with st.container(border=True):
-        shortage_df = normal_df[
-            (normal_df["설계심도"].notna()) &
-            (normal_df["시공심도"].notna()) &
-            (normal_df["부족심도"] > 0)
-        ].copy()
-
-        if not shortage_df.empty:
-            shortage_df = shortage_df.sort_values("부족심도", ascending=False).copy()
-            shortage_df["부족심도"] = shortage_df["부족심도"].round(2)
-
-            display_df = shortage_df[
-                ["장비유형", "장비", "구역", "천공번호", "설계심도", "시공심도", "부족심도"]
-            ].rename(columns={
-                "장비": "장비명",
-                "설계심도": "설계심도(m)",
-                "시공심도": "시공심도(m)",
-                "부족심도": "부족심도(m)"
-            })
-
-            st.markdown("#### 설계심도 대비 부족심도 발생 공")
-            st.dataframe(
-                display_df,
-                use_container_width=True,
-                hide_index=True
-            )
-
-            top_shortage = shortage_df.head(20).copy()
-            top_shortage["공번호표시"] = top_shortage["구역"].astype(str) + "-" + top_shortage["천공번호"].astype(str)
-
-            fig_shortage = px.bar(
-                top_shortage.sort_values("부족심도"),
-                x="부족심도",
-                y="공번호표시",
-                color="장비유형",
-                text=top_shortage.sort_values("부족심도")["부족심도"].round(2),
-                orientation="h",
-                title="부족심도 발생 공 TOP 20",
-                color_discrete_sequence=COLOR_SEQ
-            )
-            fig_shortage.update_traces(
-                texttemplate="%{text:.2f}m",
-                textposition="outside",
-                textfont_size=16
-            )
-            fig_shortage.update_layout(
-                xaxis_title="부족심도(m)",
-                yaxis_title="구역-천공번호"
-            )
-            fig_shortage = apply_chart_style(fig_shortage, height=720)
-            st.plotly_chart(fig_shortage, use_container_width=True)
-
-        else:
-            st.success("설계심도 대비 부족심도가 확인된 공이 없습니다.")
-
-    section_header(
-        "6. 동일 장비유형 인접 천공 TOP 10",
-        "삼축은 삼축끼리, 일축은 일축끼리만 비교하며 삼축↔일축 비교는 제외합니다.",
-        "adjacent-section"
-    )
+    section_header("5. 동일 장비유형 인접 천공 TOP 10", "삼축은 삼축끼리, 일축은 일축끼리만 비교하며 삼축↔일축 비교는 제외합니다.", "adjacent-section")
 
     with st.container(border=True):
         if not adjacent_df.empty:
@@ -1015,21 +621,9 @@ if has_drilling:
             c2.metric("평균 심도차", f"{adjacent_df['심도차'].mean():.2f}m")
             c3.metric("최대 심도차", f"{adjacent_df['심도차'].max():.2f}m")
 
-            st.dataframe(
-                top_cases[["비교유형", "비교구간", "장비비교", "시공심도1", "시공심도2", "심도차", "검토등급"]],
-                use_container_width=True,
-                hide_index=True
-            )
+            st.dataframe(top_cases[["비교유형", "비교구간", "장비비교", "시공심도1", "시공심도2", "심도차", "검토등급"]], use_container_width=True, hide_index=True)
 
-            fig5 = px.bar(
-                top_cases.sort_values("심도차"),
-                x="심도차",
-                y="비교구간",
-                color="장비유형",
-                orientation="h",
-                title="동일 장비유형 인접 천공 심도차 TOP 10",
-                color_discrete_sequence=COLOR_SEQ
-            )
+            fig5 = px.bar(top_cases.sort_values("심도차"), x="심도차", y="비교구간", color="장비유형", orientation="h", title="동일 장비유형 인접 천공 심도차 TOP 10", color_discrete_sequence=COLOR_SEQ)
             fig5.update_layout(xaxis_title="시공심도 차이(m)", yaxis_title="천공 구간")
             fig5 = apply_chart_style(fig5, height=560)
             st.plotly_chart(fig5, use_container_width=True)
@@ -1070,11 +664,11 @@ if has_drilling:
 else:
     st.info("CCM 천공일지가 업로드되지 않았거나 인식되지 않아 장비 간 편차 분석은 표시하지 않습니다.")
 
-section_header("7. AI 종합 분석 의견", "업로드된 데이터 기준으로 공정 현황과 천공 편차를 종합 요약합니다.", "comment-section")
+section_header("6. AI 종합 분석 의견", "업로드된 데이터 기준으로 공정 현황과 천공 편차를 종합 요약합니다.", "comment-section")
 with st.container(border=True):
     st.write(create_ai_comment(summary_df, daily_df, drill_df, adjacent_df))
 
-section_header("8. 데이터 다운로드", "분석 결과를 CSV 파일로 저장하여 후속 보고서 작성에 활용할 수 있습니다.", "download-section")
+section_header("7. 데이터 다운로드", "분석 결과를 CSV 파일로 저장하여 후속 보고서 작성에 활용할 수 있습니다.", "download-section")
 with st.container(border=True):
     if has_status and not summary_df.empty:
         st.download_button(
@@ -1091,17 +685,3 @@ with st.container(border=True):
             file_name="동일유형_인접천공_장비비교.csv",
             mime="text/csv"
         )
-
-    if has_drilling and "부족심도" in drill_df.columns:
-        shortage_download = drill_df[
-            (drill_df["상태"] == "정상") &
-            (drill_df["부족심도"] > 0)
-        ].copy()
-
-        if not shortage_download.empty:
-            st.download_button(
-                "설계심도 대비 부족심도 CSV 다운로드",
-                shortage_download.to_csv(index=False).encode("utf-8-sig"),
-                file_name="설계심도_대비_부족심도.csv",
-                mime="text/csv"
-            )
