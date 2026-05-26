@@ -6,49 +6,385 @@ import re
 from datetime import timedelta
 from pathlib import Path
 
-st.set_page_config(page_title="AI 기반 공정 분석 시스템", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="AI 기반 공정 분석 시스템",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 LOGO_PATH = "cj_logo.png"
 COLOR_SEQ = ["#005BAC", "#00AEEF", "#F58220", "#ED1C24", "#4F46E5", "#10B981"]
 
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap');
+
 html { scroll-behavior: smooth; }
-.stApp { background: linear-gradient(180deg, #F8FBFF 0%, #EEF4FA 100%); }
-.block-container { padding-top: 2rem; padding-bottom: 3.2rem; max-width: 1500px; }
-[data-testid="stSidebar"] { background: linear-gradient(180deg, #f8fafc 0%, #eaf1fb 100%); border-right: 1px solid #dbe3ef; }
-[data-testid="stSidebar"] * { color: #0f172a !important; }
-[data-testid="stSidebar"] .block-container { padding-top: 1rem; }
-.logo-box { background: transparent; padding: 6px 0 18px 0; margin-bottom: 10px; text-align: center; }
-.side-nav { display: block; padding: 14px 16px; margin: 8px 0; border-radius: 14px; background: white; color: #0f172a !important; text-decoration: none; font-weight: 800; transition: all 0.2s ease; border: 1px solid #dbe3ef; box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05); }
-.side-nav:hover { background: linear-gradient(135deg, #005BAC 0%, #00AEEF 100%); transform: translateX(6px); color: white !important; box-shadow: 0 8px 20px rgba(0,91,172,0.22); }
-.main-title { font-size: clamp(34px, 3.1vw, 52px); font-weight: 950; color: #071B3A; line-height: 1.08; letter-spacing: -1.4px; margin: 8px 0 10px 0; word-break: keep-all; }
-.sub-title { color: #52657A; font-size: 18px; font-weight: 500; margin-bottom: 28px; line-height: 1.6; }
-.hero-card { background: linear-gradient(135deg, #071B3A 0%, #005BAC 52%, #00AEEF 100%); padding: 38px 42px; border-radius: 28px; margin-bottom: 26px; box-shadow: 0 22px 50px rgba(0,91,172,0.22); }
-.hero-title { font-size: 34px; font-weight: 950; color: white; margin-bottom: 12px; letter-spacing: -0.8px; }
-.hero-desc { color: #EAF7FF; font-size: 17px; line-height: 1.8; max-width: 920px; }
-.upload-panel { background: rgba(255,255,255,0.92); padding: 30px; border-radius: 26px; border: 1px solid #CFE0F3; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.07); margin-bottom: 26px; }
-.upload-title { font-size: 26px; font-weight: 950; color: #071B3A; margin-bottom: 8px; }
-.upload-desc { color: #52657A; font-size: 16px; line-height: 1.75; margin-bottom: 18px; }
-.small-chip { display: inline-block; padding: 8px 13px; border-radius: 999px; background: #EAF4FF; color: #005BAC; font-weight: 900; font-size: 13px; margin-right: 8px; margin-bottom: 8px; border: 1px solid #CFE5FF; }
-[data-testid="stFileUploader"] { background: #F8FBFF; border: 2px dashed #7CBCEB; border-radius: 24px; padding: 28px; }
-[data-testid="stFileUploaderDropzone"] { background: white; border: 2px dashed #A6D7FA; border-radius: 20px; min-height: 142px; padding: 28px; }
-[data-testid="stFileUploaderDropzone"]:hover { border-color: #005BAC; background: #EDF7FF; }
-.anchor-offset { scroll-margin-top: 100px; }
-.section-title { font-size: 30px; font-weight: 950; color: #071B3A; margin: 32px 0 6px 0; letter-spacing: -0.8px; }
-.section-title:before { content: ""; display: inline-block; width: 9px; height: 24px; border-radius: 6px; background: linear-gradient(180deg, #005BAC, #00AEEF); margin-right: 11px; vertical-align: -3px; }
-.section-desc { color: #52657A; font-size: 16px; line-height: 1.65; margin-bottom: 16px; }
-.metric-card { background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,251,255,0.98)); padding: 24px 18px; border-radius: 26px; border: 1px solid #D5E5F6; text-align: center; box-shadow: 0 14px 36px rgba(0,91,172,0.08), 0 4px 10px rgba(15,23,42,0.04); min-height: 138px; }
-.metric-title { font-size: 15px; color: #52657A; margin-bottom: 14px; font-weight: 900; }
-.metric-value { font-size: clamp(27px, 2.2vw, 40px); font-weight: 950; color: #071B3A; line-height: 1.1; letter-spacing: -0.8px; word-break: keep-all; }
-[data-testid="stVerticalBlockBorderWrapper"] { border-radius: 26px !important; border-color: #D4E2F0 !important; background: rgba(255,255,255,0.72); box-shadow: 0 12px 34px rgba(15,23,42,0.045); }
-[data-testid="stPlotlyChart"] { background: white; border-radius: 24px; padding: 10px; border: 1px solid #D4E2F0; box-shadow: 0 10px 26px rgba(0,91,172,0.07); overflow: hidden; margin: 8px 0 18px 0; }
-[data-testid="stDataFrame"] { border-radius: 18px; overflow: hidden; border: 1px solid #D4E2F0; box-shadow: 0 8px 22px rgba(15, 23, 42, 0.045); }
-.status-good, .status-watch, .status-risk { padding: 17px 20px; border-radius: 18px; font-weight: 900; margin: 18px 0 18px 0; }
-.status-good { background: #E8F8EF; color: #06613C; border: 1px solid #B9EBCF; }
-.status-watch { background: #FFF7E6; color: #8A5200; border: 1px solid #F5D38B; }
-.status-risk { background: #FFF0F0; color: #B00020; border: 1px solid #F2B8B8; }
-.stDownloadButton button, .stButton button { border-radius: 15px !important; font-weight: 900 !important; padding: 0.75rem 1rem !important; }
+
+* {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(22px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.stApp {
+    background:
+        radial-gradient(circle at 85% 0%, rgba(0, 174, 239, 0.16) 0%, rgba(0, 174, 239, 0) 32%),
+        radial-gradient(circle at 8% 8%, rgba(0, 91, 172, 0.10) 0%, rgba(0, 91, 172, 0) 28%),
+        linear-gradient(180deg, #F8FBFF 0%, #EEF4FA 100%);
+}
+
+.block-container {
+    padding-top: 2.2rem;
+    padding-bottom: 3.6rem;
+    max-width: 1540px;
+}
+
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #f8fafc 0%, #eaf1fb 100%);
+    border-right: 1px solid #dbe3ef;
+}
+
+[data-testid="stSidebar"] * {
+    color: #0f172a !important;
+}
+
+[data-testid="stSidebar"] .block-container {
+    padding-top: 1rem;
+}
+
+.logo-box {
+    background: transparent;
+    padding: 6px 0 18px 0;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.side-nav {
+    display: block;
+    padding: 15px 17px;
+    margin: 9px 0;
+    border-radius: 16px;
+    background: white;
+    color: #0f172a !important;
+    text-decoration: none;
+    font-weight: 900;
+    transition: all 0.22s ease;
+    border: 1px solid #dbe3ef;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+.side-nav:hover {
+    background: linear-gradient(135deg, #005BAC 0%, #00AEEF 100%);
+    transform: translateX(7px);
+    color: white !important;
+    box-shadow: 0 10px 24px rgba(0,91,172,0.26);
+}
+
+.main-title {
+    font-size: clamp(44px, 4.2vw, 72px);
+    font-weight: 900;
+    color: #071B3A;
+    line-height: 1.03;
+    letter-spacing: -2.4px;
+    margin: 10px 0 14px 0;
+    word-break: keep-all;
+    animation: fadeUp 0.7s ease both;
+}
+
+.sub-title {
+    color: #52657A;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    line-height: 1.65;
+    animation: fadeUp 0.8s ease both;
+    animation-delay: 0.05s;
+}
+
+.hero-card {
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 88% 15%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0) 26%),
+        linear-gradient(135deg, #071B3A 0%, #005BAC 52%, #00AEEF 100%);
+    padding: 44px 48px;
+    border-radius: 34px;
+    margin-bottom: 30px;
+    box-shadow:
+        0 28px 70px rgba(0,91,172,0.26),
+        0 8px 22px rgba(15,23,42,0.10);
+    animation: fadeUp 0.85s ease both;
+    animation-delay: 0.10s;
+}
+
+.hero-card:after {
+    content: "";
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    right: -90px;
+    bottom: -120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.14);
+}
+
+.hero-title {
+    font-size: clamp(32px, 3vw, 46px);
+    font-weight: 900;
+    color: white;
+    margin-bottom: 14px;
+    letter-spacing: -1.2px;
+}
+
+.hero-desc {
+    color: #EAF7FF;
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.8;
+    max-width: 980px;
+}
+
+.upload-panel {
+    background:
+        radial-gradient(circle at top right, rgba(0,174,239,0.12), transparent 34%),
+        rgba(255,255,255,0.94);
+    padding: 34px;
+    border-radius: 30px;
+    border: 1px solid #CFE0F3;
+    box-shadow:
+        0 20px 48px rgba(15, 23, 42, 0.08),
+        0 4px 12px rgba(0, 91, 172, 0.05);
+    margin-bottom: 30px;
+    animation: fadeUp 0.8s ease both;
+}
+
+.upload-title {
+    font-size: 30px;
+    font-weight: 900;
+    color: #071B3A;
+    margin-bottom: 10px;
+    letter-spacing: -0.8px;
+}
+
+.upload-desc {
+    color: #52657A;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.75;
+    margin-bottom: 20px;
+}
+
+.small-chip {
+    display: inline-block;
+    padding: 9px 15px;
+    border-radius: 999px;
+    background: #EAF4FF;
+    color: #005BAC;
+    font-weight: 900;
+    font-size: 14px;
+    margin-right: 9px;
+    margin-bottom: 9px;
+    border: 1px solid #CFE5FF;
+}
+
+[data-testid="stFileUploader"] {
+    background: #F8FBFF;
+    border: 2px dashed #7CBCEB;
+    border-radius: 28px;
+    padding: 32px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.8);
+}
+
+[data-testid="stFileUploaderDropzone"] {
+    background: white;
+    border: 2px dashed #A6D7FA;
+    border-radius: 24px;
+    min-height: 160px;
+    padding: 32px;
+    transition: all 0.22s ease;
+}
+
+[data-testid="stFileUploaderDropzone"]:hover {
+    border-color: #005BAC;
+    background: #EDF7FF;
+    transform: translateY(-2px);
+}
+
+.anchor-offset {
+    scroll-margin-top: 110px;
+}
+
+.section-title {
+    font-size: clamp(32px, 2.6vw, 44px);
+    font-weight: 900;
+    color: #071B3A;
+    margin: 42px 0 8px 0;
+    letter-spacing: -1.2px;
+    animation: fadeUp 0.65s ease both;
+}
+
+.section-title:before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #005BAC, #00AEEF);
+    margin-right: 13px;
+    vertical-align: -4px;
+    box-shadow: 0 8px 18px rgba(0, 91, 172, 0.24);
+}
+
+.section-desc {
+    color: #52657A;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    animation: fadeUp 0.65s ease both;
+}
+
+.metric-card {
+    background:
+        radial-gradient(circle at top right, rgba(0,174,239,0.18), transparent 36%),
+        linear-gradient(180deg, #ffffff 0%, #f3f9ff 100%);
+    padding: 32px 22px;
+    border-radius: 32px;
+    border: 1px solid #C9DDF2;
+    text-align: center;
+    box-shadow:
+        0 22px 52px rgba(0,91,172,0.14),
+        0 6px 16px rgba(15,23,42,0.06);
+    min-height: 170px;
+    transition: all 0.25s ease;
+    animation: scaleIn 0.55s ease both;
+}
+
+.metric-card:hover {
+    transform: translateY(-7px);
+    box-shadow:
+        0 30px 70px rgba(0,91,172,0.20),
+        0 10px 24px rgba(15,23,42,0.08);
+}
+
+.metric-title {
+    font-size: 18px;
+    color: #52657A;
+    margin-bottom: 18px;
+    font-weight: 900;
+}
+
+.metric-value {
+    font-size: clamp(36px, 2.8vw, 54px);
+    font-weight: 900;
+    color: #071B3A;
+    line-height: 1.05;
+    letter-spacing: -1.6px;
+    word-break: keep-all;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: 32px !important;
+    border-color: #C9DDF2 !important;
+    background:
+        radial-gradient(circle at top right, rgba(0,174,239,0.08), transparent 32%),
+        rgba(255,255,255,0.80);
+    box-shadow:
+        0 18px 48px rgba(15,23,42,0.07),
+        0 4px 12px rgba(0,91,172,0.05);
+    animation: fadeUp 0.65s ease both;
+}
+
+[data-testid="stPlotlyChart"] {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border-radius: 32px;
+    padding: 24px;
+    border: 1px solid #C9DDF2;
+    box-shadow:
+        0 24px 60px rgba(0, 91, 172, 0.14),
+        0 8px 20px rgba(15, 23, 42, 0.07);
+    overflow: hidden;
+    margin: 16px 0 32px 0;
+    animation: fadeUp 0.72s ease both;
+}
+
+[data-testid="stDataFrame"] {
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid #D4E2F0;
+    box-shadow:
+        0 14px 34px rgba(15, 23, 42, 0.07),
+        0 4px 12px rgba(0, 91, 172, 0.04);
+    animation: fadeUp 0.6s ease both;
+}
+
+.status-good, .status-watch, .status-risk {
+    padding: 20px 24px;
+    border-radius: 22px;
+    font-weight: 900;
+    font-size: 18px;
+    margin: 20px 0 22px 0;
+    animation: fadeUp 0.65s ease both;
+}
+
+.status-good {
+    background: #E8F8EF;
+    color: #06613C;
+    border: 1px solid #B9EBCF;
+}
+
+.status-watch {
+    background: #FFF7E6;
+    color: #8A5200;
+    border: 1px solid #F5D38B;
+}
+
+.status-risk {
+    background: #FFF0F0;
+    color: #B00020;
+    border: 1px solid #F2B8B8;
+}
+
+.stDownloadButton button, .stButton button {
+    border-radius: 18px !important;
+    font-weight: 900 !important;
+    font-size: 17px !important;
+    padding: 0.85rem 1.2rem !important;
+    box-shadow: 0 10px 24px rgba(0,91,172,0.12);
+}
+
+.stAlert {
+    border-radius: 20px;
+    font-size: 16px;
+}
+
+h4 {
+    font-size: 24px !important;
+    color: #071B3A !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.5px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -61,23 +397,63 @@ def section_header(title, desc=None, anchor=None):
         st.markdown(f'<div class="section-desc">{desc}</div>', unsafe_allow_html=True)
 
 
-def apply_chart_style(fig, height=540, legend=True):
+def apply_chart_style(fig, height=620, legend=True):
     fig.update_layout(
         height=height,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="#FFFFFF",
-        font=dict(family="Arial, sans-serif", size=18, color="#0F172A"),
-        title=dict(font=dict(size=25, color="#071B3A"), x=0.02, xanchor="left", y=0.96),
-        margin=dict(l=82, r=44, t=94, b=92),
-        legend=dict(orientation="h", yanchor="bottom", y=1.04, xanchor="right", x=1, bgcolor="rgba(255,255,255,0)", font=dict(size=16)),
-        xaxis=dict(title_font=dict(size=18, color="#334155"), tickfont=dict(size=15, color="#475569"), showgrid=False, zeroline=False, linecolor="#AFC3D8", automargin=True),
-        yaxis=dict(title_font=dict(size=18, color="#334155"), tickfont=dict(size=15, color="#475569"), gridcolor="#E5EEF8", zeroline=False, linecolor="#AFC3D8", automargin=True)
+        font=dict(
+            family="Pretendard, Arial, sans-serif",
+            size=20,
+            color="#071B3A"
+        ),
+        title=dict(
+            font=dict(size=31, color="#071B3A", family="Pretendard, Arial, sans-serif"),
+            x=0.02,
+            xanchor="left",
+            y=0.96
+        ),
+        margin=dict(l=100, r=58, t=115, b=110),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.05,
+            xanchor="right",
+            x=1,
+            bgcolor="rgba(255,255,255,0)",
+            font=dict(size=18)
+        ),
+        xaxis=dict(
+            title_font=dict(size=22, color="#334155"),
+            tickfont=dict(size=18, color="#475569"),
+            showgrid=False,
+            zeroline=False,
+            linecolor="#B7C9DC",
+            automargin=True
+        ),
+        yaxis=dict(
+            title_font=dict(size=22, color="#334155"),
+            tickfont=dict(size=18, color="#475569"),
+            gridcolor="#E2ECF7",
+            zeroline=False,
+            linecolor="#B7C9DC",
+            automargin=True
+        )
     )
 
     if not legend:
         fig.update_layout(showlegend=False)
 
-    fig.update_traces(marker_line_width=0, textfont=dict(size=17, color="#071B3A"), hoverlabel=dict(bgcolor="white", font_size=16, font_family="Arial"))
+    fig.update_traces(
+        marker_line_width=0,
+        textfont=dict(size=21, color="#071B3A"),
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=18,
+            font_family="Pretendard, Arial, sans-serif"
+        )
+    )
+
     return fig
 
 
@@ -507,10 +883,18 @@ if has_status:
             chart_df = summary_df.copy()
             chart_df["공종"] = chart_df["구분"].astype(str) + " " + chart_df["규격"].astype(str)
 
-            fig = px.bar(chart_df, x="공종", y="진행률", color="구분", text=chart_df["진행률"].round(1), title="공종별 진행률", color_discrete_sequence=COLOR_SEQ)
-            fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside", textfont_size=18)
+            fig = px.bar(
+                chart_df,
+                x="공종",
+                y="진행률",
+                color="구분",
+                text=chart_df["진행률"].round(1),
+                title="공종별 진행률",
+                color_discrete_sequence=COLOR_SEQ
+            )
+            fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside", textfont_size=22)
             fig.update_layout(yaxis_title="진행률(%)", xaxis_title="공종")
-            fig = apply_chart_style(fig, height=560)
+            fig = apply_chart_style(fig, height=660)
             st.plotly_chart(fig, use_container_width=True)
 
             with st.expander("공정 현황 상세표 보기"):
@@ -534,20 +918,34 @@ if has_status:
                 st.markdown("#### 중층 작업 실적")
                 middle_df = daily_df[["날짜", "CCM-T", "CCM"]].copy()
                 middle_df["중층 합계"] = middle_df["CCM-T"] + middle_df["CCM"]
-                fig_middle = px.line(middle_df, x="날짜", y=["CCM-T", "CCM", "중층 합계"], markers=True, title="중층 작업 실적 추이", color_discrete_sequence=COLOR_SEQ)
-                fig_middle.update_traces(line=dict(width=4), marker=dict(size=8))
+                fig_middle = px.line(
+                    middle_df,
+                    x="날짜",
+                    y=["CCM-T", "CCM", "중층 합계"],
+                    markers=True,
+                    title="중층 작업 실적 추이",
+                    color_discrete_sequence=COLOR_SEQ
+                )
+                fig_middle.update_traces(line=dict(width=5), marker=dict(size=10))
                 fig_middle.update_layout(yaxis_title="중층 실적(공)", xaxis_title="날짜")
-                fig_middle = apply_chart_style(fig_middle, height=540)
+                fig_middle = apply_chart_style(fig_middle, height=620)
                 st.plotly_chart(fig_middle, use_container_width=True)
 
         with right:
             with st.container(border=True):
                 st.markdown("#### 표층 작업 실적")
                 surface_df = daily_df[["날짜", "표층"]].copy()
-                fig_surface = px.bar(surface_df, x="날짜", y="표층", text="표층", title="표층 작업 실적 추이", color_discrete_sequence=["#005BAC"])
-                fig_surface.update_traces(texttemplate="%{text:.0f}", textposition="outside", textfont_size=16)
+                fig_surface = px.bar(
+                    surface_df,
+                    x="날짜",
+                    y="표층",
+                    text="표층",
+                    title="표층 작업 실적 추이",
+                    color_discrete_sequence=["#005BAC"]
+                )
+                fig_surface.update_traces(texttemplate="%{text:.0f}", textposition="outside", textfont_size=18)
                 fig_surface.update_layout(yaxis_title="표층 실적(㎡)", xaxis_title="날짜")
-                fig_surface = apply_chart_style(fig_surface, height=540, legend=False)
+                fig_surface = apply_chart_style(fig_surface, height=620, legend=False)
                 st.plotly_chart(fig_surface, use_container_width=True)
 
         with st.expander("일자별 실적 상세표 보기"):
@@ -581,19 +979,38 @@ if has_drilling:
         left, right = st.columns(2)
 
         with left:
-            fig3 = px.bar(machine_summary, x="장비", y="평균시공심도", color="장비유형", text=machine_summary["평균시공심도"].round(2), title="장비별 평균 시공심도", color_discrete_sequence=COLOR_SEQ)
-            fig3.update_traces(textposition="inside", textfont_size=17, textfont_color="white")
+            fig3 = px.bar(
+                machine_summary,
+                x="장비",
+                y="평균시공심도",
+                color="장비유형",
+                text=machine_summary["평균시공심도"].round(2),
+                title="장비별 평균 시공심도",
+                color_discrete_sequence=COLOR_SEQ
+            )
+            fig3.update_traces(textposition="inside", textfont_size=20, textfont_color="white")
             fig3.update_layout(yaxis_title="평균 시공심도(m)", xaxis_title="장비")
-            fig3 = apply_chart_style(fig3, height=540)
+            fig3 = apply_chart_style(fig3, height=620)
             fig3.update_xaxes(tickangle=-30)
             st.plotly_chart(fig3, use_container_width=True)
 
         with right:
-            zone_count = normal_df.groupby(["장비유형", "대구역"], as_index=False).agg(천공수=("천공번호", "count"), 평균시공심도=("시공심도", "mean"))
-            fig4 = px.bar(zone_count, x="대구역", y="천공수", color="장비유형", text="천공수", title="구역별 천공 데이터 수", color_discrete_sequence=COLOR_SEQ)
-            fig4.update_traces(textposition="inside", textfont_size=17, textfont_color="white")
+            zone_count = normal_df.groupby(["장비유형", "대구역"], as_index=False).agg(
+                천공수=("천공번호", "count"),
+                평균시공심도=("시공심도", "mean")
+            )
+            fig4 = px.bar(
+                zone_count,
+                x="대구역",
+                y="천공수",
+                color="장비유형",
+                text="천공수",
+                title="구역별 천공 데이터 수",
+                color_discrete_sequence=COLOR_SEQ
+            )
+            fig4.update_traces(textposition="inside", textfont_size=20, textfont_color="white")
             fig4.update_layout(yaxis_title="천공 데이터 수", xaxis_title="구역")
-            fig4 = apply_chart_style(fig4, height=540)
+            fig4 = apply_chart_style(fig4, height=620)
             st.plotly_chart(fig4, use_container_width=True)
 
         with st.expander("천공 장비별 상세표 보기"):
@@ -621,11 +1038,23 @@ if has_drilling:
             c2.metric("평균 심도차", f"{adjacent_df['심도차'].mean():.2f}m")
             c3.metric("최대 심도차", f"{adjacent_df['심도차'].max():.2f}m")
 
-            st.dataframe(top_cases[["비교유형", "비교구간", "장비비교", "시공심도1", "시공심도2", "심도차", "검토등급"]], use_container_width=True, hide_index=True)
+            st.dataframe(
+                top_cases[["비교유형", "비교구간", "장비비교", "시공심도1", "시공심도2", "심도차", "검토등급"]],
+                use_container_width=True,
+                hide_index=True
+            )
 
-            fig5 = px.bar(top_cases.sort_values("심도차"), x="심도차", y="비교구간", color="장비유형", orientation="h", title="동일 장비유형 인접 천공 심도차 TOP 10", color_discrete_sequence=COLOR_SEQ)
+            fig5 = px.bar(
+                top_cases.sort_values("심도차"),
+                x="심도차",
+                y="비교구간",
+                color="장비유형",
+                orientation="h",
+                title="동일 장비유형 인접 천공 심도차 TOP 10",
+                color_discrete_sequence=COLOR_SEQ
+            )
             fig5.update_layout(xaxis_title="시공심도 차이(m)", yaxis_title="천공 구간")
-            fig5 = apply_chart_style(fig5, height=560)
+            fig5 = apply_chart_style(fig5, height=660)
             st.plotly_chart(fig5, use_container_width=True)
 
             type_summary = (
